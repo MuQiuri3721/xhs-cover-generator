@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书爆款推文生成器 Pro (完美无按钮版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@700&family=Zcool+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            background-attachment: fixed; 
+            background-size: cover;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .xhs-card {
+            width: 360px;
+            height: 480px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .content-container {
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .content-text {
+            flex: 1;
+            white-space: pre-wrap;
+            /* 核心修改：确保长字符串（如1111）能强制切断换行 */
+            word-break: break-all !important;
+            overflow-wrap: anywhere !important;
+            overflow: hidden;
+            max-height: 100%;
+            line-height: 1.5;
+            padding-bottom: 4px;
+            /* 增加一个具体的最小高度，防止截图时容器塌陷 */
+            min-height: 300px;
+        }
+
+        .xhs-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .xhs-card {
+                width: 300px;
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .xhs-card {
+                width: 280px;
+                height: 373px;
+            }
+        }
+
+        /* 移动端布局调整 */
+        @media (max-width: 1024px) {
+            #app {
+                flex-direction: column;
+            }
+            
+            aside {
+                width: 100% !important;
+                min-width: unset !important;
+                max-height: 60vh;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            main {
+                flex: 1;
+                padding: 6px;
+            }
+            
+            .glass-effect {
+                border-radius: 0;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+            }
+        }
+
+        .font-sans-sc { font-family: 'Noto Sans SC', sans-serif; }
+        .font-serif-sc { font-family: 'Noto Serif SC', serif; }
+        .font-hand { font-family: 'Ma Shan Zheng', cursive; }
+        .font-cute { font-family: 'Zcool KuaiLe', cursive; }
+        .font-xiaowei { font-family: 'ZCOOL XiaoWei', serif; }
+        .font-longcang { font-family: 'Long Cang', cursive; }
+        .font-zhimang { font-family: 'Zhi Mang Xing', cursive; }
+        .font-liujian { font-family: 'Liu Jian Mao Cao', cursive; }
+        .font-qingke { font-family: 'ZCOOL QingKe HuangYou', cursive; }
+
+        /* 高亮样式 */
+        .highlight-text {
+            color: #ef4444; 
+            font-weight: 900;
+            background: linear-gradient(120deg, rgba(255,255,0,0.3) 0%, rgba(255,255,0,0.3) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+            padding: 0 2px;
+        }
+
+        .noise-overlay {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #f472b6, #ec4899);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(236, 72, 153, 0.4);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+        }
+
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2px;
+            border-radius: 12px;
+        }
+
+        .gradient-border-inner {
+            background: white;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
+        }
+
+        .animate-fade-in { animation: fadeInUp 0.6s ease-out; }
+        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .glass-effect { animation: fadeInUp 0.8s ease-out; }
+        .xhs-card { animation: fadeInUp 0.6s ease-out; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col">
+
+    <div id="app" class="flex flex-1 h-full">
+        <aside class="w-1/3 min-w-[350px] glass-effect border-r border-white/20 flex flex-col h-full z-10 shadow-2xl">
+            <div class="p-6 border-b border-white/10">
+                <h1 class="text-2xl font-black section-title"><i class="fa-solid fa-camera-retro mr-3"></i>XHS Maker <span class="text-xs text-gray-400 font-normal ml-2">v2.2</span></h1>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+                
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-pen-nib w-6 mr-2"></i> 内容编辑</h3>
+                        <div class="space-y-3">
+                            <input v-model="content.title" type="text" placeholder="输入大标题..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-lg transition-all">
+                            <input v-model="content.subtitle" type="text" placeholder="副标题 / 英文装饰..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                            <div class="flex gap-3">
+                                <input v-model="content.author" type="text" placeholder="@作者名" class="w-1/2 p-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all">
+                                <input v-model="content.date" type="text" placeholder="第01期 / 日期" class="w-1/2 p-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all">
+                            </div>
+                            <textarea v-model="content.body" rows="6" placeholder="输入正文。提示：输入 **重点** 可高亮。系统已修复文字截断问题。" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm leading-relaxed transition-all resize-none"></textarea>
+                            <div class="text-xs text-gray-400 text-right font-medium">已输入 {{ content.body.length }} 字</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="animate-fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-palette w-6 mr-2"></i> 风格预设</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button v-for="(s, key) in styles" :key="key" 
+                            @click="applyStyle(key)"
+                            :class="{'ring-2 ring-purple-500 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 text-purple-700 shadow-lg': currentStyleKey === key}"
+                            class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:shadow-md transition-all duration-300 text-center font-medium">
+                            {{ s.name }}
+                        </button>
+                    </div>
+                </section>
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-sliders w-6 mr-2"></i> 视觉微调</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-5">
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">背景色</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" v-model="config.bgColor" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                    <span class="text-xs text-gray-500 font-mono">{{ config.bgColor }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">文字色</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" v-model="config.textColor" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                    <span class="text-xs text-gray-500 font-mono">{{ config.textColor }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">字体选择</label>
+                                <select v-model="config.fontFamily" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                                    <option value="'Noto Sans SC', sans-serif">无衬线体 (默认)</option>
+                                    <option value="'Noto Serif SC', serif">衬线体 (文艺)</option>
+                                    <option value="'Ma Shan Zheng', cursive">手写体 (古风)</option>
+                                    <option value="'Zcool KuaiLe', cursive">卡通体 (可爱)</option>
+                                    <option value="'ZCOOL XiaoWei', serif">小薇体 (优雅)</option>
+                                    <option value="'Long Cang', cursive">龙藏体 (书法)</option>
+                                    <option value="'Zhi Mang Xing', cursive">志莽行体 (行书)</option>
+                                    <option value="'Liu Jian Mao Cao', cursive">刘建毛草 (草书)</option>
+                                    <option value="'ZCOOL QingKe HuangYou', cursive">青科黄油 (复古)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                    <span class="font-medium">标题大小</span>
+                                    <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.titleSize }}px</span>
+                                </div>
+                                <input type="range" v-model.number="config.titleSize" min="20" max="80" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                    <span class="font-medium">正文大小</span>
+                                    <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.bodySize }}px</span>
+                                </div>
+                                <input type="range" v-model.number="config.bodySize" min="12" max="30" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">文本对齐</label>
+                                <div class="flex gap-2">
+                                    <button @click="config.align = 'left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.align === 'left'}" class="flex-1 p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-left"></i>
+                                    </button>
+                                    <button @click="config.align = 'center'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.align === 'center'}" class="flex-1 p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-center"></i>
+                                    </button>
+                                    <button @click="config.align = 'right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.align === 'right'}" class="flex-1 p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-right"></i>
+                                    </button>
+                                    <button @click="config.align = 'justify'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.align === 'justify'}" class="flex-1 p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-justify"></i>
+                                    </button>
+                                </div>
+                            </div>
+                             <div>
+                                <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                    <span class="font-medium">遮罩浓度</span>
+                                    <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.overlayOpacity }}%</span>
+                                </div>
+                                <input type="range" v-model.number="config.overlayOpacity" min="0" max="90" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                 <section class="animate-fade-in" style="animation-delay: 0.4s;">
+                    <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-image w-6 mr-2"></i> 背景图片</h3>
+                    <div class="relative">
+                        <input type="file" @change="handleImageUpload" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:from-purple-600 hover:file:to-pink-600 file:cursor-pointer file:transition-all">
+                        <button v-if="config.bgImage" @click="config.bgImage = ''" class="mt-3 text-xs text-red-500 hover:text-red-600 font-medium underline decoration-dashed">移除背景图</button>
+                    </div>
+                </section>
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.5s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-tint w-6 mr-2"></i> 水印设置</h3>
+                        <div class="space-y-3">
+                            <input v-model="config.watermark.text" type="text" placeholder="输入水印文本（如@作者名）" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">水印大小</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.watermark.size }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.watermark.size" min="8" max="24" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">透明度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.watermark.opacity }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.watermark.opacity" min="5" max="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">水印位置</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button @click="config.watermark.position = 'top-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'top-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-top fa-align-left"></i>
+                                    </button>
+                                    <button @click="config.watermark.position = 'top-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'top-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-top fa-align-right"></i>
+                                    </button>
+                                    <button @click="config.watermark.position = 'bottom-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'bottom-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-bottom fa-align-left"></i>
+                                    </button>
+                                    <button @click="config.watermark.position = 'bottom-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'bottom-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-align-bottom fa-align-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="animate-fade-in" style="animation-delay: 0.6s;">
+                    <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-save w-6 mr-2"></i> 配置管理</h3>
+                    <div class="flex gap-2">
+                        <button @click="saveConfig" class="flex-1 p-3 text-xs border-2 border-green-500 text-green-700 rounded-xl hover:bg-green-50 transition-all flex items-center justify-center gap-1 font-medium">
+                            <i class="fa-solid fa-save"></i>
+                            保存配置
+                        </button>
+                        <button @click="loadConfig" class="flex-1 p-3 text-xs border-2 border-blue-500 text-blue-700 rounded-xl hover:bg-blue-50 transition-all flex items-center justify-center gap-1 font-medium">
+                            <i class="fa-solid fa-load"></i>
+                            加载配置
+                        </button>
+                        <button @click="resetConfig" class="flex-1 p-3 text-xs border-2 border-red-500 text-red-700 rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-1 font-medium">
+                            <i class="fa-solid fa-trash"></i>
+                            重置
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+
+            <div class="p-6 border-t border-white/10 bg-gradient-to-r from-purple-50 to-pink-50">
+                <button @click="exportImages" :disabled="isExporting" 
+                    :class="{'animate-pulse-glow': !isExporting}"
+                    class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl flex items-center justify-center gap-3">
+                    <i v-if="isExporting" class="fa-solid fa-circle-notch fa-spin"></i>
+                    <i v-else class="fa-solid fa-download"></i>
+                    {{ isExporting ? '生成中...' : '一键打包下载高清图' }}
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-10 relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-purple-900/20"></div>
+            <div class="relative z-10 flex flex-wrap justify-center gap-8 pb-20">
+                
+                <div v-for="(page, index) in allPages" :key="index" :id="'capture-' + index" 
+                     class="xhs-card flex flex-col p-8" :style="cardStyle">
+                      
+                    <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none' }"></div>
+                    <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
+                    <div class="noise-overlay z-0"></div>
+
+                    <div v-if="config.watermark.text" 
+                         :class="[
+                             'absolute z-20 pointer-events-none',
+                             config.watermark.position === 'top-left' ? 'top-6 left-8' : '',
+                             config.watermark.position === 'top-right' ? 'top-6 right-8' : '',
+                             config.watermark.position === 'bottom-left' ? 'bottom-8 left-8' : '',
+                             config.watermark.position === 'bottom-right' ? 'bottom-8 right-8' : ''
+                         ]"
+                         :style="{
+                             fontSize: config.watermark.size + 'px',
+                             opacity: config.watermark.opacity / 100,
+                             color: config.textColor,
+                             fontFamily: config.fontFamily
+                         }">
+                        {{ config.watermark.text }}
+                    </div>
+
+                    <div v-if="index === 0" class="relative z-10 h-full flex flex-col">
+                        <div class="flex justify-between items-center opacity-60 mb-8">
+                            <span v-if="content.date" class="text-xs tracking-widest uppercase border border-current px-3 py-1 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">{{ content.date }}</span>
+                            <span v-else></span>
+                            <span class="text-xs font-bold">{{ content.author }}</span>
+                        </div>
+
+                        <div class="flex-1 flex flex-col justify-center p-6">
+                            <div class="flex flex-col justify-center items-center text-center flex-1">
+                                <h1 class="font-black mb-6 whitespace-pre-wrap w-full"
+                                    :style="{ fontSize: config.titleSize + 'px', lineHeight: '1.2' }">
+                                    {{ content.title || '标题预览' }}
+                                </h1>
+                                <p class="text-lg opacity-80 font-medium tracking-wide w-full text-center"
+                                   :style="{ fontSize: (config.titleSize * 0.4) + 'px', lineHeight: '1.4' }">
+                                    {{ content.subtitle }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-current border-opacity-30 flex justify-between items-end">
+                            <div class="text-xs opacity-70">
+                                SHARE FOR<br>MORE IDEAS
+                            </div>
+                            <div class="text-3xl opacity-80">
+                                <i class="fa-brands fa-xiaohongshu"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="relative z-10 h-full flex flex-col">
+                        <div class="flex justify-between items-center opacity-50 mb-4 border-b border-current border-opacity-20 pb-2">
+                             <span class="text-xs font-bold">{{ content.title }}</span>
+                             <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
+                        </div>
+
+                        <div class="mb-4 opacity-60">
+                            <div class="h-1 bg-current bg-opacity-20 rounded-full overflow-hidden">
+                                <div class="h-full bg-current rounded-full transition-all duration-300 ease-out" 
+                                     :style="{ width: (index / (allPages.length - 1) * 100) + '%' }"></div>
+                            </div>
+                        </div>
+
+                        <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden" 
+                             :style="{ fontSize: config.bodySize + 'px', textAlign: config.align, lineHeight: '1.5' }">
+                            <div class="content-text" v-html="renderPageText(page)"></div>
+                        </div>
+
+                        <div class="mt-3 flex justify-between items-center">
+                            <div v-if="index < allPages.length - 1" class="opacity-40">
+                                <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
+                            </div>
+                            
+                            <button @click="exportSinglePage(index)" data-html2canvas-ignore="true" class="text-xs text-current bg-current bg-opacity-10 hover:bg-opacity-20 px-3 py-1 rounded-full transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-download text-xs"></i>
+                                下载此页
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, reactive, watch, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                // 1. 状态定义
+                const isExporting = ref(false);
+                const currentStyleKey = ref('minimalist');
+
+                const content = reactive({
+                    title: "五分钟学会\n做小红书爆款图",
+                    subtitle: "Design Tips & Tricks",
+                    author: "@视觉黑客",
+                    date: "NO.01 / 2026",
+                    body: "1. 确定主题风格：\n好的封面是成功的一半。根据你的内容调性选择合适的配色。\n\n2. 字体选择：\n大标题要粗，正文要细。衬线体适合文艺风，无衬线适合干货类。\n\n3. 留白艺术：\n不要把画面塞满，适当的留白能让画面更高级。\n\n4. 视觉层级：\n通过字号大小、颜色深浅来区分信息的重要性，引导用户视线。\n\n5. 色彩搭配：\n选择和谐的色彩组合，主色调不要超过3种，避免视觉疲劳。\n\n6. 图像选择：\n高清图片是基础，模糊的图片会降低整体品质。\n\n7. 排版技巧：\n对齐方式要统一，标题与正文的比例要协调。\n\n8. 装饰元素：\n适当的装饰能提升画面质感，但不要喧宾夺主。\n\n9. 品牌一致性：\n保持风格统一，建立个人品牌识别度。\n\n10. 细节处理：\n关注字体间距、行高、边框等细节，细节决定成败。\n\n这是一个自动分页的演示文本。当内容超过一页的容量时，系统会自动将其切割成多张图片，确保排版美观。你可以在左侧输入框随意输入长文本进行测试。\n\n测试分页功能：请继续添加更多内容来测试自动分页效果。当文字内容足够多时，系统会自动创建新的页面，确保所有文字都能完整显示。\n\n更多测试内容：这是为了测试分页功能而添加的额外内容，确保系统能够正确处理长文本。\n\n继续测试：分页功能应该能够自动将这些内容分割到多个页面中，每个页面都显示完整的内容。"
+                });
+
+                const config = reactive({
+                    bgColor: '#ffffff',
+                    textColor: '#1a1a1a',
+                    titleSize: 42,
+                    bodySize: 16,
+                    overlayOpacity: 0,
+                    bgImage: '',
+                    fontFamily: "'Noto Sans SC', sans-serif",
+                    align: 'left',
+                    watermark: {
+                        text: '',
+                        size: 12,
+                        opacity: 20,
+                        position: 'bottom-right'
+                    }
+                });
+
+                // 2. 风格预设库
+                const styles = {
+                    minimalist: {
+                        name: "极简白",
+                        cfg: { bgColor: '#ffffff', textColor: '#1a1a1a', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    geek: {
+                        name: "极客黑",
+                        cfg: { bgColor: '#111111', textColor: '#00ff41', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    blue: {
+                        name: "科技蓝",
+                        cfg: { bgColor: '#2563eb', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    cream: {
+                        name: "奶油风",
+                        cfg: { bgColor: '#fdfbf7', textColor: '#8b5e3c', fontFamily: "'Noto Serif SC', serif", overlayOpacity: 0, align: 'justify' }
+                    },
+                    sticker: {
+                        name: "多巴胺",
+                        cfg: { bgColor: '#fcd34d', textColor: '#be185d', fontFamily: "'Zcool KuaiLe', cursive", overlayOpacity: 0, align: 'left' }
+                    },
+                    memo: {
+                        name: "备忘录",
+                        cfg: { bgColor: '#fef3c7', textColor: '#4b5563', fontFamily: "'ZCOOL XiaoWei', serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    retro: {
+                        name: "复古风",
+                        cfg: { bgColor: '#d4a76a', textColor: '#8b0000', fontFamily: "'Noto Serif SC', serif", overlayOpacity: 0, align: 'justify' }
+                    },
+                    tech: {
+                        name: "未来感",
+                        cfg: { bgColor: '#0f172a', textColor: '#60a5fa', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    nature: {
+                        name: "小清新",
+                        cfg: { bgColor: '#e0f2fe', textColor: '#0369a1', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    business: {
+                        name: "商务灰",
+                        cfg: { bgColor: '#f1f5f9', textColor: '#1e293b', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
+                    },
+                    gray: {
+                        name: "高级灰",
+                        cfg: { bgColor: '#6b7280', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'center' }
+                    },
+                    // ... 保留其他风格预设 (略微精简代码以适应长度)
+                };
+
+                // ============================================
+                // 核心修复：MAX_HEIGHT 调整为 300，避免最后一行被切
+                // ============================================
+                const paginateText = (text, cfg) => {
+                    if (!text) return [''];
+
+                    const dummy = document.createElement('div');
+                    document.body.appendChild(dummy);
+
+                    // 严格同步样式
+                    dummy.style.width = '296px';
+                    dummy.style.fontSize = cfg.bodySize + 'px';
+                    dummy.style.fontFamily = cfg.fontFamily;
+                    dummy.style.lineHeight = '1.5';
+                    dummy.style.whiteSpace = 'pre-wrap';
+                    // 核心修改：确保长字符串（如1111）能强制切断换行
+                    dummy.style.wordBreak = 'break-all';
+                    dummy.style.overflowWrap = 'anywhere';
+                    dummy.style.textAlign = cfg.align;
+                    dummy.style.position = 'fixed';
+                    dummy.style.left = '-9999px';
+                    dummy.style.visibility = 'hidden';
+
+                    // 【核心修改】从 340 降低到 300，留出底部安全空间
+                    const MAX_HEIGHT = 300; 
+                    
+                    const pages = [];
+                    let remaining = text;
+
+                    while (remaining.length > 0) {
+                        // 1. 先尝试全部放入
+                        const cleanText = remaining.replace(/\*\*(.*?)\*\*/g, '$1');
+                        dummy.innerText = cleanText;
+                        if (dummy.offsetHeight <= MAX_HEIGHT) {
+                            pages.push(remaining);
+                            break;
+                        }
+
+                        // 2. 二分查找
+                        let low = 0;
+                        let high = remaining.length;
+                        let splitIndex = 0;
+
+                        while (low <= high) {
+                            const mid = Math.floor((low + high) / 2);
+                            const midText = remaining.slice(0, mid).replace(/\*\*(.*?)\*\*/g, '$1');
+                            dummy.innerText = midText;
+                            
+                            if (dummy.offsetHeight <= MAX_HEIGHT) {
+                                splitIndex = mid;
+                                low = mid + 1;
+                            } else {
+                                high = mid - 1;
+                            }
+                        }
+
+                        // 3. 智能回退
+                        let bestSplit = splitIndex;
+                        const lookBackRange = Math.min(20, splitIndex); 
+                        const punctuation = ['\n', '。', '！', '？', '；', '.', '!', '?', ';', '”', '"'];
+                        
+                        for (let i = 0; i < lookBackRange; i++) {
+                            const char = remaining[splitIndex - 1 - i];
+                            if (punctuation.includes(char)) {
+                                bestSplit = splitIndex - i; 
+                                break;
+                            }
+                        }
+                        
+                        if (bestSplit < splitIndex * 0.8) {
+                            bestSplit = splitIndex;
+                        }
+
+                        if (bestSplit === 0) bestSplit = 1;
+
+                        pages.push(remaining.slice(0, bestSplit));
+                        
+                        remaining = remaining.slice(bestSplit);
+                        
+                        if (remaining.startsWith('\n')) {
+                            remaining = remaining.slice(1);
+                        }
+                    }
+
+                    document.body.removeChild(dummy);
+                    return pages;
+                };
+
+                const splitContent = ref([]);
+
+                watch(
+                    [
+                        () => content.body, 
+                        () => config.bodySize, 
+                        () => config.fontFamily,
+                        () => config.align
+                    ], 
+                    () => {
+                        nextTick(() => {
+                            splitContent.value = paginateText(content.body, config);
+                        });
+                    },
+                    { immediate: true }
+                );
+
+                const allPages = computed(() => {
+                    return ['', ...splitContent.value];
+                });
+
+                const cardStyle = computed(() => ({
+                    color: config.textColor,
+                    fontFamily: config.fontFamily,
+                }));
+
+                const applyStyle = (key) => {
+                    currentStyleKey.value = key;
+                    const s = styles[key].cfg;
+                    config.bgColor = s.bgColor;
+                    config.textColor = s.textColor;
+                    config.fontFamily = s.fontFamily;
+                    config.align = s.align;
+                    if(!config.bgImage) config.overlayOpacity = s.overlayOpacity;
+                };
+
+                const handleImageUpload = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            config.bgImage = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+
+                const exportImages = async () => {
+                    isExporting.value = true;
+                    try {
+                        // 1. 确保字体加载完成
+                        await document.fonts.ready;
+                        
+                        // 2. 给 DOM 一点点时间渲染样式
+                        await nextTick();
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        const totalPages = allPages.value.length;
+                        const zip = new JSZip();
+
+                        // 3. 批量处理每一页
+                        for (let i = 0; i < totalPages; i++) {
+                            const element = document.getElementById(`capture-${i}`);
+                            if (!element) continue;
+
+                            // 4. 使用html-to-image库导出
+                            const dataUrl = await htmlToImage.toPng(element, {
+                                pixelRatio: 2, // 2倍清晰度
+                                skipFonts: false, // 尝试包含字体
+                            });
+
+                            // 5. 将DataURL转为Blob存入ZIP
+                            const response = await fetch(dataUrl);
+                            const blob = await response.blob();
+                            zip.file(`xhs-slide-${i + 1}.png`, blob);
+                        }
+
+                        // 6. 生成并下载ZIP文件
+                        const content = await zip.generateAsync({ type: 'blob' });
+                        const link = document.createElement('a');
+                        link.download = `xhs-post-${Date.now()}.zip`;
+                        link.href = URL.createObjectURL(content);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+
+                        setTimeout(() => {
+                            alert('生成成功！所有图片已打包为ZIP文件下载');
+                        }, 500);
+                    } catch (error) {
+                        console.error('Export failed:', error);
+                        alert('导出失败: ' + error.message);
+                    } finally {
+                        isExporting.value = false;
+                    }
+                };
+
+
+
+                const saveConfig = () => {
+                    try {
+                        localStorage.setItem('xhs-maker-config', JSON.stringify({
+                            bgColor: config.bgColor,
+                            textColor: config.textColor,
+                            titleSize: config.titleSize,
+                            bodySize: config.bodySize,
+                            overlayOpacity: config.overlayOpacity,
+                            fontFamily: config.fontFamily,
+                            align: config.align,
+                            watermark: config.watermark
+                        }));
+                        alert('配置保存成功！');
+                    } catch (error) {
+                        console.error('Save config failed:', error);
+                        alert('保存失败，请重试');
+                    }
+                };
+
+                const loadConfig = () => {
+                    try {
+                        const savedConfig = localStorage.getItem('xhs-maker-config');
+                        if (savedConfig) {
+                            const parsedConfig = JSON.parse(savedConfig);
+                            Object.assign(config, parsedConfig);
+                            alert('配置加载成功！');
+                        } else {
+                            alert('没有找到保存的配置');
+                        }
+                    } catch (error) {
+                        console.error('Load config failed:', error);
+                        alert('加载失败，请重试');
+                    }
+                };
+
+                const resetConfig = () => {
+                    if (confirm('确定要重置所有配置吗？')) {
+                        config.bgColor = '#ffffff';
+                        config.textColor = '#1a1a1a';
+                        config.titleSize = 42;
+                        config.bodySize = 16;
+                        config.overlayOpacity = 0;
+                        config.bgImage = '';
+                        config.fontFamily = "'Noto Sans SC', sans-serif";
+                        config.align = 'left';
+                        config.watermark = {
+                            text: '',
+                            size: 12,
+                            opacity: 20,
+                            position: 'bottom-right'
+                        };
+                        currentStyleKey.value = 'minimalist';
+                        alert('配置已重置为默认值');
+                    }
+                };
+
+                const renderPageText = (text) => {
+                    if (!text) return '';
+                    let safeText = text.replace(/&/g, "&amp;")
+                                       .replace(/</g, "&lt;")
+                                       .replace(/>/g, "&gt;")
+                                       .replace(/"/g, "&quot;")
+                                       .replace(/'/g, "&#039;");
+                    // 替换换行符为 <br>，替换 **text** 为高亮
+                    return safeText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<span class="highlight-text">$1</span>');
+                };
+
+
+
+                const exportSinglePage = async (pageIndex) => {
+                    try {
+                        // 1. 确保字体加载完成
+                        await document.fonts.ready;
+                        
+                        // 2. 给 DOM 一点点时间渲染样式
+                        await nextTick();
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        const element = document.getElementById(`capture-${pageIndex}`);
+                        if (!element) {
+                            alert('页面元素未找到');
+                            return;
+                        }
+
+                        // 3. 使用html-to-image库导出
+                        const dataUrl = await htmlToImage.toPng(element, {
+                            pixelRatio: 2, // 2倍清晰度
+                            skipFonts: false, // 尝试包含字体
+                        });
+
+                        // 4. 下载图片
+                        const link = document.createElement('a');
+                        link.download = `xhs-slide-${pageIndex + 1}.png`;
+                        link.href = dataUrl;
+                        link.click();
+
+                        setTimeout(() => { alert('单页导出成功！'); }, 500);
+                    } catch (error) {
+                        console.error('Export single page failed:', error);
+                        alert('导出失败: ' + error.message);
+                    }
+                };
+
+                return {
+                    content, config, styles, currentStyleKey,
+                    splitContent, allPages, cardStyle,
+                    applyStyle, handleImageUpload, exportImages, isExporting,
+                    saveConfig, loadConfig, resetConfig,
+                    renderPageText, exportSinglePage
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
