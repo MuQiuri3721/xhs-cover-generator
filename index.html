@@ -8,7 +8,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@700&family=Zcool+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Zcool+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -46,11 +47,7 @@
             word-break: break-all !important;
             overflow-wrap: anywhere !important;
             overflow: hidden;
-            max-height: 100%;
-            line-height: 1.5;
-            padding-bottom: 4px;
-            /* 增加一个具体的最小高度，防止截图时容器塌陷 */
-            min-height: 300px;
+            white-space: pre-wrap;
         }
 
         .xhs-card:hover {
@@ -184,47 +181,149 @@
             50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
         }
 
-        .animate-fade-in { animation: fadeInUp 0.6s ease-out; }
-        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
-        .glass-effect { animation: fadeInUp 0.8s ease-out; }
-        .xhs-card { animation: fadeInUp 0.6s ease-out; }
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .glass-effect {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .xhs-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .xhs-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .xhs-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .xhs-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .xhs-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .xhs-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+        
+        /* 网格线样式 */
+        .bg-grid {
+            background-image: linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* 安全区域指示器 */
+        .safe-area-indicator {
+            border: 2px dashed rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+        }
+
+        /* 文字效果 */
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1px #ffffff;
+        }
+
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* 设备边框样式 */
+        .device-frame {
+            position: relative;
+            padding: 20px;
+            background: #111;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .device-frame::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+        }
+
+        .device-frame::after {
+            content: '';
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: #222;
+            border-radius: 50%;
+            border: 3px solid #333;
+        }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex flex-col">
 
-    <div id="app" class="flex flex-1 h-full">
-        <aside class="w-1/3 min-w-[350px] glass-effect border-r border-white/20 flex flex-col h-full z-10 shadow-2xl">
-            <div class="p-6 border-b border-white/10">
-                <h1 class="text-2xl font-black section-title"><i class="fa-solid fa-camera-retro mr-3"></i>XHS Maker <span class="text-xs text-gray-400 font-normal ml-2">v2.2</span></h1>
+    <div id="app" class="flex flex-1 h-full flex-col md:flex-row">
+        <aside class="w-full md:w-1/3 min-w-[300px] md:min-w-[350px] glass-effect border-b md:border-b-0 md:border-r border-white/20 flex flex-col h-auto md:h-full z-10 shadow-2xl">
+            <div class="p-4 md:p-6 border-b border-white/10">
+                <h1 class="text-xl md:text-2xl font-black section-title"><i class="fa-solid fa-camera-retro mr-2 md:mr-3"></i>XHS Maker <span class="text-xs text-gray-400 font-normal ml-2">v1.0</span></h1>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 no-scrollbar">
                 
-                <section class="gradient-border animate-fade-in" style="animation-delay: 0.1s;">
-                    <div class="gradient-border-inner p-4">
-                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-pen-nib w-6 mr-2"></i> 内容编辑</h3>
-                        <div class="space-y-3">
-                            <input v-model="content.title" type="text" placeholder="输入大标题..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-lg transition-all">
-                            <input v-model="content.subtitle" type="text" placeholder="副标题 / 英文装饰..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
-                            <div class="flex gap-3">
-                                <input v-model="content.author" type="text" placeholder="@作者名" class="w-1/2 p-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all">
-                                <input v-model="content.date" type="text" placeholder="第01期 / 日期" class="w-1/2 p-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all">
+                <div class="gradient-border animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="gradient-border-inner p-3 md:p-4">
+                        <h3 class="text-sm font-bold section-title mb-3 md:mb-4 flex items-center"><i class="fa-solid fa-pen-nib w-6 mr-2"></i> 内容编辑</h3>
+                        <div class="space-y-2 md:space-y-3">
+                            <input v-model="content.title" type="text" placeholder="输入大标题..." class="w-full p-2 md:p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-lg transition-all">
+                            <input v-model="content.subtitle" type="text" placeholder="副标题 / 英文装饰..." class="w-full p-2 md:p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                            <div class="flex gap-2 md:gap-3">
+                                <input v-model="content.author" type="text" placeholder="@作者名" class="w-1/2 p-2 md:p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                                <input v-model="content.date" type="text" placeholder="第01期 / 日期" class="w-1/2 p-2 md:p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
                             </div>
-                            <textarea v-model="content.body" rows="6" placeholder="输入正文。提示：输入 **重点** 可高亮。系统已修复文字截断问题。" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm leading-relaxed transition-all resize-none"></textarea>
+                            <textarea v-model="content.body" rows="5 md:rows-6" placeholder="输入正文内容，支持换行。系统会自动分页..." class="w-full p-2 md:p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm leading-relaxed transition-all resize-none"></textarea>
                             <div class="text-xs text-gray-400 text-right font-medium">已输入 {{ content.body.length }} 字</div>
                         </div>
                     </div>
-                </section>
+                </div>
 
                 <section class="animate-fade-in" style="animation-delay: 0.2s;">
                     <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-palette w-6 mr-2"></i> 风格预设</h3>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button v-for="(s, key) in styles" :key="key" 
-                            @click="applyStyle(key)"
-                            :class="{'ring-2 ring-purple-500 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 text-purple-700 shadow-lg': currentStyleKey === key}"
-                            class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:shadow-md transition-all duration-300 text-center font-medium">
-                            {{ s.name }}
-                        </button>
+                    <div class="space-y-4">
+                        <div v-for="(category, categoryName) in styles" :key="categoryName" class="space-y-2">
+                            <h4 class="text-xs font-bold text-gray-600 uppercase tracking-wider">{{ categoryName }}</h4>
+                            <div class="grid grid-cols-3 gap-2 md:gap-3">
+                                <button v-for="(template, index) in category" :key="index" 
+                                    @click="applyTemplate(template)"
+                                    class="p-2 md:p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:shadow-md transition-all duration-300 text-center font-medium">
+                                    {{ template.name }}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -262,6 +361,15 @@
                                     <option value="'Zhi Mang Xing', cursive">志莽行体 (行书)</option>
                                     <option value="'Liu Jian Mao Cao', cursive">刘建毛草 (草书)</option>
                                     <option value="'ZCOOL QingKe HuangYou', cursive">青科黄油 (复古)</option>
+                                    <option value="Arial, sans-serif">Arial (英文)</option>
+                                    <option value="'Times New Roman', serif">Times New Roman (英文)</option>
+                                    <option value="Georgia, serif">Georgia (英文)</option>
+                                    <option value="'Courier New', monospace">Courier New (等宽)</option>
+                                    <option value="Verdana, sans-serif">Verdana (英文)</option>
+                                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS (英文)</option>
+                                    <option value="'Segoe UI', sans-serif">Segoe UI (现代)</option>
+                                    <option value="Roboto, sans-serif">Roboto (谷歌)</option>
+                                    <option value="'Open Sans', sans-serif">Open Sans (开源)</option>
                                 </select>
                             </div>
                             <div>
@@ -305,12 +413,255 @@
                         </div>
                     </div>
                 </section>
-                
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.4s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-magic w-6 mr-2"></i> 文字效果</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">文字阴影</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="config.textEffects.shadow" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">文字描边</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="config.textEffects.stroke" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">文字渐变</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="config.textEffects.gradient" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">竖排文字</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="config.textEffects.verticalText" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 阴影效果设置 -->
+                            <div v-if="config.textEffects.shadow" class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-gray-600 block mb-2 font-medium">阴影颜色</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" v-model="config.textEffects.shadowColor" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                        <span class="text-xs text-gray-500 font-mono">{{ config.textEffects.shadowColor }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">阴影模糊</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.textEffects.shadowBlur }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.textEffects.shadowBlur" min="0" max="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">阴影偏移 X</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.textEffects.shadowOffsetX }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.textEffects.shadowOffsetX" min="-20" max="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">阴影偏移 Y</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.textEffects.shadowOffsetY }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.textEffects.shadowOffsetY" min="-20" max="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+                            
+                            <!-- 描边效果设置 -->
+                            <div v-if="config.textEffects.stroke" class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-gray-600 block mb-2 font-medium">描边颜色</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" v-model="config.textEffects.strokeColor" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                        <span class="text-xs text-gray-500 font-mono">{{ config.textEffects.strokeColor }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">描边宽度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.textEffects.strokeWidth }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.textEffects.strokeWidth" min="0.5" max="5" step="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+                            
+                            <!-- 渐变效果设置 -->
+                            <div v-if="config.textEffects.gradient" class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-gray-600 block mb-2 font-medium">渐变方向</label>
+                                    <select v-model="config.textEffects.gradientDirection" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                                        <option value="horizontal">水平渐变</option>
+                                        <option value="vertical">垂直渐变</option>
+                                        <option value="diagonal">对角线渐变</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs text-gray-600 block mb-2 font-medium">渐变颜色1</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" v-model="config.textEffects.gradientColors[0]" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                            <span class="text-xs text-gray-500 font-mono">{{ config.textEffects.gradientColors[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 block mb-2 font-medium">渐变颜色2</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" v-model="config.textEffects.gradientColors[1]" class="h-10 w-10 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all">
+                                            <span class="text-xs text-gray-500 font-mono">{{ config.textEffects.gradientColors[1] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.5s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-mobile-alt w-6 mr-2"></i> 响应式预览</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">预览模式</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button @click="previewMode = 'desktop'" :class="{'ring-2 ring-purple-500 bg-purple-50': previewMode === 'desktop'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-desktop"></i>
+                                        <span>桌面</span>
+                                    </button>
+                                    <button @click="previewMode = 'mobile'" :class="{'ring-2 ring-purple-500 bg-purple-50': previewMode === 'mobile'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-mobile-alt"></i>
+                                        <span>手机</span>
+                                    </button>
+                                    <button @click="previewMode = 'tablet'" :class="{'ring-2 ring-purple-500 bg-purple-50': previewMode === 'tablet'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-tablet-alt"></i>
+                                        <span>平板</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">显示安全区域</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="showSafeArea" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600 font-medium">显示网格线</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="showGridLines" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                  <section class="animate-fade-in" style="animation-delay: 0.4s;">
                     <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-image w-6 mr-2"></i> 背景图片</h3>
                     <div class="relative">
-                        <input type="file" @change="handleImageUpload" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:from-purple-600 hover:file:to-pink-600 file:cursor-pointer file:transition-all">
+                        <div 
+                            @drop="handleDrop"
+                            @dragover.prevent
+                            @dragenter="handleDragEnter"
+                            @dragleave="handleDragLeave"
+                            class="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-3 text-center hover:border-purple-400 transition-all cursor-pointer"
+                            :class="{ 'border-purple-400 bg-purple-50': isDragging }"
+                        >
+                            <i class="fa-solid fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500">拖放图片到此处上传，或</p>
+                            <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" ref="fileInput">
+                            <button @click="$refs.fileInput.click()" class="mt-2 text-xs text-purple-600 hover:text-purple-700 font-medium underline">点击选择图片</button>
+                        </div>
                         <button v-if="config.bgImage" @click="config.bgImage = ''" class="mt-3 text-xs text-red-500 hover:text-red-600 font-medium underline decoration-dashed">移除背景图</button>
+                    </div>
+                </section>
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.45s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-magic w-6 mr-2"></i> 图片滤镜</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600 font-medium">启用滤镜</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" v-model="config.imageFilter.enabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                </label>
+                            </div>
+                            
+                            <div v-if="config.imageFilter.enabled" class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">亮度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.brightness }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.brightness" min="0" max="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">对比度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.contrast }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.contrast" min="0" max="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">饱和度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.saturate }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.saturate" min="0" max="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">灰度</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.grayscale }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.grayscale" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">褐色</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.sepia }}%</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.sepia" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">模糊</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.blur }}px</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.blur" min="0" max="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                        <span class="font-medium">色相旋转</span>
+                                        <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.imageFilter.hueRotate }}°</span>
+                                    </div>
+                                    <input type="range" v-model.number="config.imageFilter.hueRotate" min="0" max="360" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <button @click="resetImageFilter" class="w-full p-3 text-xs border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                    <i class="fa-solid fa-undo"></i>
+                                    重置滤镜
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -339,16 +690,16 @@
                                 <label class="text-xs text-gray-600 block mb-2 font-medium">水印位置</label>
                                 <div class="grid grid-cols-4 gap-2">
                                     <button @click="config.watermark.position = 'top-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'top-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
-                                        <i class="fa-solid fa-align-top fa-align-left"></i>
+                                        <i class="fa-solid fa-align-top"></i>
                                     </button>
                                     <button @click="config.watermark.position = 'top-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'top-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
-                                        <i class="fa-solid fa-align-top fa-align-right"></i>
+                                        <i class="fa-solid fa-align-top"></i>
                                     </button>
                                     <button @click="config.watermark.position = 'bottom-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'bottom-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
-                                        <i class="fa-solid fa-align-bottom fa-align-left"></i>
+                                        <i class="fa-solid fa-align-bottom"></i>
                                     </button>
                                     <button @click="config.watermark.position = 'bottom-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.watermark.position === 'bottom-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
-                                        <i class="fa-solid fa-align-bottom fa-align-right"></i>
+                                        <i class="fa-solid fa-align-bottom"></i>
                                     </button>
                                 </div>
                             </div>
@@ -356,515 +707,1362 @@
                     </div>
                 </section>
 
-                <section class="animate-fade-in" style="animation-delay: 0.6s;">
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.55s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-qrcode w-6 mr-2"></i> 二维码设置</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600 font-medium">显示二维码</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" v-model="config.qrcode.enabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                </label>
+                            </div>
+                            
+                            <div v-if="config.qrcode.enabled" class="space-y-3">
+                                <input v-model="config.qrcode.content" type="text" placeholder="输入二维码内容（如网址、文本）" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                            <span class="font-medium">二维码大小</span>
+                                            <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.qrcode.size }}px</span>
+                                        </div>
+                                        <input type="range" v-model.number="config.qrcode.size" min="50" max="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs text-gray-600 mb-2">
+                                            <span class="font-medium">边距</span>
+                                            <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{{ config.qrcode.margin }}px</span>
+                                        </div>
+                                        <input type="range" v-model.number="config.qrcode.margin" min="0" max="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-600 block mb-2 font-medium">二维码位置</label>
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <button @click="config.qrcode.position = 'top-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.qrcode.position === 'top-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                            <i class="fa-solid fa-align-top"></i>
+                                        </button>
+                                        <button @click="config.qrcode.position = 'top-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.qrcode.position === 'top-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                            <i class="fa-solid fa-align-top"></i>
+                                        </button>
+                                        <button @click="config.qrcode.position = 'bottom-left'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.qrcode.position === 'bottom-left'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                            <i class="fa-solid fa-align-bottom"></i>
+                                        </button>
+                                        <button @click="config.qrcode.position = 'bottom-right'" :class="{'ring-2 ring-purple-500 bg-purple-50': config.qrcode.position === 'bottom-right'}" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                            <i class="fa-solid fa-align-bottom"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-center">
+                                    <div v-if="config.qrcode.dataUrl" class="border-2 border-gray-200 rounded-xl p-2 bg-white inline-block">
+                                        <img :src="config.qrcode.dataUrl" :width="config.qrcode.size" :height="config.qrcode.size" alt="QR Code" class="block mx-auto">
+                                    </div>
+                                    <div v-else class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
+                                        <i class="fa-solid fa-qrcode text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <button @click="generateQRCode" class="w-full p-3 text-xs border-2 border-purple-500 text-purple-700 rounded-xl hover:bg-purple-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                    <i class="fa-solid fa-sync-alt"></i>
+                                    生成二维码
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="gradient-border animate-fade-in" style="animation-delay: 0.6s;">
+                    <div class="gradient-border-inner p-4">
+                        <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-pen-fancy w-6 mr-2"></i> 文案助手</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">文案类型</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button @click="currentCopyType = 'titles'" :class="{'ring-2 ring-purple-500 bg-purple-50': currentCopyType === 'titles'}" class="p-2 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        标题
+                                    </button>
+                                    <button @click="currentCopyType = 'openers'" :class="{'ring-2 ring-purple-500 bg-purple-50': currentCopyType === 'openers'}" class="p-2 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        开场白
+                                    </button>
+                                    <button @click="currentCopyType = 'tags'" :class="{'ring-2 ring-purple-500 bg-purple-50': currentCopyType === 'tags'}" class="p-2 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-all flex items-center justify-center">
+                                        标签
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">文案模板</label>
+                                <select v-model="selectedCopyTemplate" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                                    <option v-for="(template, index) in copyTemplates[currentCopyType]" :key="index" :value="template">
+                                        {{ template }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">替换关键词</label>
+                                <input v-model="keyword" type="text" placeholder="输入关键词（如：产品、主题）" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600 block mb-2 font-medium">生成结果</label>
+                                <div class="p-3 border-2 border-gray-200 rounded-xl bg-gray-50">
+                                    <p class="text-sm">{{ generatedCopy }}</p>
+                                </div>
+                                <div class="flex justify-between mt-2 text-xs text-gray-500">
+                                    <span>长度: {{ generatedCopy.length }}字符</span>
+                                    <span>Emoji: {{ emojiCount }}个</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="generateCopy" class="flex-1 p-3 text-xs border-2 border-purple-500 text-purple-700 rounded-xl hover:bg-purple-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                    <i class="fa-solid fa-magic"></i>
+                                    生成文案
+                                </button>
+                                <button @click="copyToClipboard" class="flex-1 p-3 text-xs border-2 border-green-500 text-green-700 rounded-xl hover:bg-green-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                    <i class="fa-solid fa-copy"></i>
+                                    复制
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="animate-fade-in" style="animation-delay: 0.7s;">
                     <h3 class="text-sm font-bold section-title mb-4 flex items-center"><i class="fa-solid fa-save w-6 mr-2"></i> 配置管理</h3>
-                    <div class="flex gap-2">
-                        <button @click="saveConfig" class="flex-1 p-3 text-xs border-2 border-green-500 text-green-700 rounded-xl hover:bg-green-50 transition-all flex items-center justify-center gap-1 font-medium">
-                            <i class="fa-solid fa-save"></i>
-                            保存配置
-                        </button>
-                        <button @click="loadConfig" class="flex-1 p-3 text-xs border-2 border-blue-500 text-blue-700 rounded-xl hover:bg-blue-50 transition-all flex items-center justify-center gap-1 font-medium">
-                            <i class="fa-solid fa-load"></i>
-                            加载配置
-                        </button>
-                        <button @click="resetConfig" class="flex-1 p-3 text-xs border-2 border-red-500 text-red-700 rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-1 font-medium">
-                            <i class="fa-solid fa-trash"></i>
-                            重置
-                        </button>
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                            <button @click="saveConfig" class="flex-1 p-3 text-xs border-2 border-green-500 text-green-700 rounded-xl hover:bg-green-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-save"></i>
+                                保存配置
+                            </button>
+                            <button @click="loadConfig" class="flex-1 p-3 text-xs border-2 border-blue-500 text-blue-700 rounded-xl hover:bg-blue-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-load"></i>
+                                加载配置
+                            </button>
+                            <button @click="resetConfig" class="flex-1 p-3 text-xs border-2 border-red-500 text-red-700 rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-trash"></i>
+                                重置
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="saveTemplate" class="flex-1 p-3 text-xs border-2 border-purple-500 text-purple-700 rounded-xl hover:bg-purple-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-file-export"></i>
+                                保存模板
+                            </button>
+                            <button @click="loadTemplate" class="flex-1 p-3 text-xs border-2 border-indigo-500 text-indigo-700 rounded-xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-file-import"></i>
+                                加载模板
+                            </button>
+                            <button @click="deleteTemplate" class="flex-1 p-3 text-xs border-2 border-orange-500 text-orange-700 rounded-xl hover:bg-orange-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-trash-alt"></i>
+                                删除模板
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="batchUpdateStyle" class="flex-1 p-3 text-xs border-2 border-purple-500 text-purple-700 rounded-xl hover:bg-purple-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-paint-roller"></i>
+                                批量更新风格
+                            </button>
+                            <button @click="batchAddWatermark" class="flex-1 p-3 text-xs border-2 border-indigo-500 text-indigo-700 rounded-xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-watermark"></i>
+                                批量添加水印
+                            </button>
+                            <button @click="batchExport" class="flex-1 p-3 text-xs border-2 border-teal-500 text-teal-700 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center gap-1 font-medium">
+                                <i class="fa-solid fa-file-export"></i>
+                                批量导出
+                            </button>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 block mb-2 font-medium">分享到社交媒体</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <button @click="shareToSocial('weibo')" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-red-400 hover:bg-red-50 transition-all flex items-center justify-center" title="分享到微博">
+                                    <i class="fa-brands fa-weibo text-red-500"></i>
+                                </button>
+                                <button @click="shareToSocial('wechat')" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all flex items-center justify-center" title="分享到微信">
+                                    <i class="fa-brands fa-weixin text-green-500"></i>
+                                </button>
+                                <button @click="shareToSocial('qq')" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center justify-center" title="分享到QQ">
+                                    <i class="fa-brands fa-qq text-blue-500"></i>
+                                </button>
+                                <button @click="shareToSocial('copy')" class="p-3 text-xs border-2 border-gray-200 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all flex items-center justify-center" title="复制链接">
+                                    <i class="fa-solid fa-link text-purple-500"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
             </div>
 
-            <div class="p-6 border-t border-white/10 bg-gradient-to-r from-purple-50 to-pink-50">
+            <div class="p-4 md:p-6 border-t border-white/10 bg-gradient-to-r from-purple-50 to-pink-50">
                 <button @click="exportImages" :disabled="isExporting" 
                     :class="{'animate-pulse-glow': !isExporting}"
-                    class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl flex items-center justify-center gap-3">
+                    class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 md:py-4 px-4 md:px-6 rounded-xl shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl flex items-center justify-center gap-2 md:gap-3">
                     <i v-if="isExporting" class="fa-solid fa-circle-notch fa-spin"></i>
                     <i v-else class="fa-solid fa-download"></i>
-                    {{ isExporting ? '生成中...' : '一键打包下载高清图' }}
+                    <span class="text-sm md:text-base">{{ isExporting ? '生成中...' : '一键打包下载高清图' }}</span>
                 </button>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-10 relative">
+        <main class="flex-1 overflow-y-auto p-4 md:p-10 relative">
             <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-purple-900/20"></div>
-            <div class="relative z-10 flex flex-wrap justify-center gap-8 pb-20">
+            <div class="relative z-10 flex flex-wrap justify-center gap-4 md:gap-8 pb-10 md:pb-20">
                 
-                <div v-for="(page, index) in allPages" :key="index" :id="'capture-' + index" 
-                     class="xhs-card flex flex-col p-8" :style="cardStyle">
-                      
-                    <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none' }"></div>
-                    <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
-                    <div class="noise-overlay z-0"></div>
+                <div v-for="(page, index) in allPages" :key="index" 
+                     class="flex flex-col items-center">
+                    <!-- 设备边框包装器 - 手机模式 -->
+                    <div v-if="previewMode === 'mobile'" class="device-frame">
+                        <!-- 实际卡片内容 -->
+                        <div :id="'capture-' + index" 
+                             class="xhs-card flex flex-col p-6 md:p-8" :style="[cardStyle, previewStyle]">
+                        
+                            <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ 
+                                backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none',
+                                filter: config.imageFilter.enabled ? `brightness(${config.imageFilter.brightness}%) contrast(${config.imageFilter.contrast}%) saturate(${config.imageFilter.saturate}%) grayscale(${config.imageFilter.grayscale}%) sepia(${config.imageFilter.sepia}%) blur(${config.imageFilter.blur}px) hue-rotate(${config.imageFilter.hueRotate}deg)` : 'none'
+                            }"></div>
+                            <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
+                            <div class="noise-overlay z-0"></div>
 
-                    <div v-if="config.watermark.text" 
-                         :class="[
-                             'absolute z-20 pointer-events-none',
-                             config.watermark.position === 'top-left' ? 'top-6 left-8' : '',
-                             config.watermark.position === 'top-right' ? 'top-6 right-8' : '',
-                             config.watermark.position === 'bottom-left' ? 'bottom-8 left-8' : '',
-                             config.watermark.position === 'bottom-right' ? 'bottom-8 right-8' : ''
-                         ]"
-                         :style="{
-                             fontSize: config.watermark.size + 'px',
-                             opacity: config.watermark.opacity / 100,
-                             color: config.textColor,
-                             fontFamily: config.fontFamily
-                         }">
-                        {{ config.watermark.text }}
+                            <!-- 安全区域指示器 -->
+                            <div v-if="showSafeArea" class="safe-area-indicator absolute inset-0 z-50 pointer-events-none"></div>
+                            <!-- 网格线 -->
+                            <div v-if="showGridLines" class="grid-lines absolute inset-0 z-50 pointer-events-none bg-grid"></div>
+
+                            <div v-if="config.watermark.text" 
+                                 :class="[
+                                     'absolute z-10 pointer-events-none',
+                                     config.watermark.position === 'top-left' ? 'top-4 left-4' : '',
+                                     config.watermark.position === 'top-right' ? 'top-4 right-4' : '',
+                                     config.watermark.position === 'bottom-left' ? 'bottom-4 left-4' : '',
+                                     config.watermark.position === 'bottom-right' ? 'bottom-4 right-4' : ''
+                                 ]"
+                                 :style="{
+                                     fontSize: config.watermark.size + 'px',
+                                     opacity: config.watermark.opacity / 100,
+                                     color: config.textColor,
+                                     fontFamily: config.fontFamily
+                                 }">
+                                {{ config.watermark.text }}
+                            </div>
+
+                            <!-- 二维码显示 -->
+                            <div v-if="config.qrcode.enabled && config.qrcode.dataUrl" 
+                                 :class="[
+                                     'absolute z-10 pointer-events-none bg-white p-2 rounded-lg',
+                                     config.qrcode.position === 'top-left' ? 'top-4 left-4' : '',
+                                     config.qrcode.position === 'top-right' ? 'top-4 right-4' : '',
+                                     config.qrcode.position === 'bottom-left' ? 'bottom-4 left-4' : '',
+                                     config.qrcode.position === 'bottom-right' ? 'bottom-4 right-4' : ''
+                                 ]">
+                                <img :src="config.qrcode.dataUrl" :width="config.qrcode.size" :height="config.qrcode.size" alt="QR Code" class="block">
+                            </div>
+
+                            <!-- 主封面 -->
+                            <div v-if="index === 0" class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-60 mb-8">
+                                    <span class="text-xs tracking-widest uppercase border border-current px-2 py-0.5 rounded-full cursor-move"
+                                          @mousedown="startDrag('date', $event)"
+                                          :style="{ transform: `translate(${elementPositions.date.x}px, ${elementPositions.date.y}px)`, transition: 'none' }">
+                                        {{ content.date }}
+                                    </span>
+                                    <span class="text-xs font-bold cursor-move"
+                                          @mousedown="startDrag('author', $event)"
+                                          :style="{ transform: `translate(${elementPositions.author.x}px, ${elementPositions.author.y}px)`, transition: 'none' }">
+                                        {{ content.author }}
+                                    </span>
+                                </div>
+
+                                <div class="flex-1 flex flex-col justify-center overflow-hidden">
+                                    <h1 class="font-black leading-tight mb-4 whitespace-pre-wrap overflow-hidden cursor-move"
+                                        @mousedown="startDrag('title', $event)"
+                                        :class="{ 'text-gradient': config.textEffects.gradient }"
+                                        :style="{ 
+                                            fontSize: config.titleSize + 'px', 
+                                            maxHeight: '70%',
+                                            transform: `translate(${elementPositions.title.x}px, ${elementPositions.title.y}px)`, 
+                                            transition: 'none',
+                                            background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                            WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                            WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                            textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                            WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none',
+                                            writingMode: config.textEffects.verticalText ? 'vertical-rl' : 'horizontal-tb',
+                                            textOrientation: config.textEffects.verticalText ? 'upright' : 'mixed'
+                                        }">
+                                        {{ content.title || '标题预览' }}
+                                    </h1>
+                                    <p class="text-lg opacity-80 font-medium tracking-wide border-l-4 border-current pl-3 overflow-hidden cursor-move"
+                                       @mousedown="startDrag('subtitle', $event)"
+                                       :class="{ 'text-gradient': config.textEffects.gradient }"
+                                       :style="{ 
+                                           fontSize: (config.titleSize * 0.4) + 'px', 
+                                           maxHeight: '20%',
+                                           transform: `translate(${elementPositions.subtitle.x}px, ${elementPositions.subtitle.y}px)`, 
+                                           transition: 'none',
+                                           background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                           WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                           WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                           textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                           WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                       }">
+                                        {{ content.subtitle }}
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto pt-8 border-t border-current border-opacity-30 flex justify-between items-end">
+                                    <div class="text-xs opacity-70">
+                                        SHARE FOR<br>MORE IDEAS
+                                    </div>
+                                    <div class="text-3xl opacity-80">
+                                        <i class="fa-brands fa-xiaohongshu"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 内容分页 -->
+                            <div v-else class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-50 mb-6 border-b border-current border-opacity-20 pb-2">
+                                     <span class="text-xs font-bold">{{ content.title }}</span>
+                                     <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
+                                </div>
+
+                                <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden cursor-move" 
+                                     @mousedown="startDrag('body', $event)"
+                                     :class="{ 'text-gradient': config.textEffects.gradient }"
+                                     :style="{ 
+                                         fontSize: config.bodySize + 'px', 
+                                         textAlign: config.align,
+                                         transform: `translate(${elementPositions.body.x}px, ${elementPositions.body.y}px)`, 
+                                         transition: 'none',
+                                         background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                         WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                         WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                         textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                         WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                     }">
+                                    <div class="content-text">
+                                        {{ page }}
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex justify-center opacity-40">
+                                    <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div v-if="index === 0" class="relative z-10 h-full flex flex-col">
-                        <div class="flex justify-between items-center opacity-60 mb-8">
-                            <span v-if="content.date" class="text-xs tracking-wider uppercase border border-current px-3 py-1 rounded-full whitespace-nowrap">{{ content.date }}</span>
-                            <span v-else class="w-0"></span>
-                            <span class="text-xs font-bold whitespace-nowrap">{{ content.author }}</span>
-                        </div>
+                    <!-- 设备边框包装器 - 平板模式 -->
+                    <div v-else-if="previewMode === 'tablet'" class="device-frame" style="transform: scale(0.8);">
+                        <div :id="'capture-' + index" 
+                             class="xhs-card flex flex-col p-6 md:p-8" :style="[cardStyle, previewStyle]">
+                        
+                            <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ 
+                                backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none',
+                                filter: config.imageFilter.enabled ? `brightness(${config.imageFilter.brightness}%) contrast(${config.imageFilter.contrast}%) saturate(${config.imageFilter.saturate}%) grayscale(${config.imageFilter.grayscale}%) sepia(${config.imageFilter.sepia}%) blur(${config.imageFilter.blur}px) hue-rotate(${config.imageFilter.hueRotate}deg)` : 'none'
+                            }"></div>
+                            <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
+                            <div class="noise-overlay z-0"></div>
 
-                        <div class="flex-1 flex flex-col justify-center p-6">
-                            <div class="flex flex-col justify-center items-center text-center flex-1">
-                                <h1 class="font-black mb-6 whitespace-pre-wrap w-full"
-                                    :style="{ fontSize: config.titleSize + 'px', lineHeight: '1.2' }">
-                                    {{ content.title || '标题预览' }}
-                                </h1>
-                                <p class="text-lg opacity-80 font-medium tracking-wide w-full text-center"
-                                   :style="{ fontSize: (config.titleSize * 0.4) + 'px', lineHeight: '1.4' }">
-                                    {{ content.subtitle }}
-                                </p>
+                            <!-- 安全区域指示器 -->
+                            <div v-if="showSafeArea" class="safe-area-indicator absolute inset-0 z-50 pointer-events-none"></div>
+                            <!-- 网格线 -->
+                            <div v-if="showGridLines" class="grid-lines absolute inset-0 z-50 pointer-events-none bg-grid"></div>
+
+                            <div v-if="config.watermark.text" 
+                                 :class="[
+                                     'absolute z-10 pointer-events-none',     
+                                     config.watermark.position === 'top-left' ? 'top-4 left-4' : '',
+                                     config.watermark.position === 'top-right' ? 'top-4 right-4' : '',
+                                     config.watermark.position === 'bottom-left' ? 'bottom-4 left-4' : '',
+                                     config.watermark.position === 'bottom-right' ? 'bottom-4 right-4' : ''
+                                 ]"
+                                 :style="{
+                                     fontSize: config.watermark.size + 'px',  
+                                     opacity: config.watermark.opacity / 100, 
+                                     color: config.textColor,
+                                     fontFamily: config.fontFamily
+                                 }">
+                                {{ config.watermark.text }}
                             </div>
-                        </div>
 
-                        <div class="mt-4 pt-4 border-t border-current border-opacity-30 flex justify-between items-end">
-                            <div class="text-xs opacity-70">
-                                SHARE FOR<br>MORE IDEAS
+                            <!-- 二维码显示 -->
+                            <div v-if="config.qrcode.enabled && config.qrcode.dataUrl" 
+                                 :class="[
+                                     'absolute z-10 pointer-events-none bg-white p-2 rounded-lg',
+                                     config.qrcode.position === 'top-left' ? 'top-4 left-4' : '',
+                                     config.qrcode.position === 'top-right' ? 'top-4 right-4' : '',
+                                     config.qrcode.position === 'bottom-left' ? 'bottom-4 left-4' : '',
+                                     config.qrcode.position === 'bottom-right' ? 'bottom-4 right-4' : ''
+                                 ]">
+                                <img :src="config.qrcode.dataUrl" :width="config.qrcode.size" :height="config.qrcode.size" alt="QR Code" class="block">
                             </div>
-                            <div class="text-3xl opacity-80">
-                                <i class="fa-brands fa-xiaohongshu"></i>
+
+                            <!-- 主封面 -->
+                            <div v-if="index === 0" class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-60 mb-8">
+                                    <span class="text-xs tracking-widest uppercase border border-current px-2 py-0.5 rounded-full cursor-move"
+                                          @mousedown="startDrag('date', $event)"
+                                          :style="{ transform: `translate(${elementPositions.date.x}px, ${elementPositions.date.y}px)`, transition: 'none' }">
+                                        {{ content.date }}
+                                    </span>
+                                    <span class="text-xs font-bold cursor      
+                                        {{ content.author }}
+                                    </span>
+                                </div>
+
+                                <div class="flex-1 flex flex-col justify-center overflow-hidden">
+                                    <h1 class="font-black leading-tight mb-4 whitespace-pre-wrap overflow-hidden cursor-move"
+                                        @mousedown="startDrag('title', $event)"
+                                        :class="{ 'text-gradient': config.textEffects.gradient }"
+                                        :style="{ 
+                                            fontSize: config.titleSize + 'px', 
+                                            maxHeight: '70%',
+                                            transform: `translate(${elementPositions.title.x}px, ${elementPositions.title.y}px)`, 
+                                            transition: 'none',
+                                            background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                            WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                            WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                            textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                            WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none',
+                                            writingMode: config.textEffects.verticalText ? 'vertical-rl' : 'horizontal-tb',
+                                            textOrientation: config.textEffects.verticalText ? 'upright' : 'mixed'
+                                        }">
+                                        {{ content.title || '标题预览' }}   
+                                    </h1>
+                                    <p class="text-lg opacity-80 font-medium tracking-wide border-l-4 border-current pl-3 overflow-hidden cursor-move"      
+                                       @mousedown="startDrag('subtitle', $event)"
+                                       :class="{ 'text-gradient': config.textEffects.gradient }"
+                                       :style="{
+                                           fontSize: (config.titleSize * 0.4) + 'px',
+                                           maxHeight: '20%',
+                                           transform: `translate(${elementPositions.subtitle.x}px, ${elementPositions.subtitle.y}px)`,
+                                           transition: 'none',
+                                           background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                           WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                           WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                           textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                           WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                       }">
+                                        {{ content.subtitle }}
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto pt-8 border-t border-current border-opacity-30 flex justify-between items-end">
+                                    <div class="text-xs opacity-70">
+                                        SHARE FOR<br>MORE IDEAS
+                                    </div>
+                                    <div class="text-3xl opacity-80">
+                                        <i class="fa-brands fa-xiaohongshu"></i>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div v-else class="relative z-10 h-full flex flex-col">
-                        <div class="flex justify-between items-center opacity-50 mb-4 border-b border-current border-opacity-20 pb-2">
-                             <span class="text-xs font-bold">{{ content.title }}</span>
-                             <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
-                        </div>
+                            <!-- 内容分页 -->
+                            <div v-else class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-50 mb-6 border-b border-current border-opacity-20 pb-2">
+                                     <span class="text-xs font-bold">{{ content.title }}</span>
+                                     <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
+                                </div>
 
-                        <div class="mb-4 opacity-60">
-                            <div class="h-1 bg-current bg-opacity-20 rounded-full overflow-hidden">
-                                <div class="h-full bg-current rounded-full transition-all duration-300 ease-out" 
-                                     :style="{ width: (index / (allPages.length - 1) * 100) + '%' }"></div>
+                                <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden cursor-move" 
+                                     @mousedown="startDrag('body', $event)"   
+                                     :class="{ 'text-gradient': config.textEffects.gradient }"
+                                     :style="{
+                                         fontSize: config.bodySize + 'px',    
+                                         textAlign: config.align,
+                                         transform: `translate(${elementPositions.body.x}px, ${elementPositions.body.y}px)`,
+                                         transition: 'none',
+                                         background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                         WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                         WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                         textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                         WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                     }">
+                                    <div class="content-text">
+                                        {{ page }}
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex justify-center opacity-40">
+                                    <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden" 
-                             :style="{ fontSize: config.bodySize + 'px', textAlign: config.align, lineHeight: '1.5' }">
-                            <div class="content-text" v-html="renderPageText(page)"></div>
-                        </div>
-
-                        <div class="mt-3 flex justify-between items-center">
-                            <div v-if="index < allPages.length - 1" class="opacity-40">
-                                <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
-                            </div>
-                            
-                            <button @click="exportSinglePage(index)" data-html2canvas-ignore="true" class="text-xs text-current bg-current bg-opacity-10 hover:bg-opacity-20 px-3 py-1 rounded-full transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-download text-xs"></i>
-                                下载此页
-                            </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
 
     <script>
-        const { createApp, ref, computed, reactive, watch, nextTick } = Vue;
+        const { createApp, ref, computed, watch, onMounted } = Vue;
 
         createApp({
             setup() {
-                // 1. 状态定义
-                const isExporting = ref(false);
-                const currentStyleKey = ref('minimalist');
-
-                const content = reactive({
-                    title: "五分钟学会\n做小红书爆款图",
-                    subtitle: "Design Tips & Tricks",
-                    author: "@视觉黑客",
-                    date: "NO.01 / 2026",
-                    body: "1. 确定主题风格：\n好的封面是成功的一半。根据你的内容调性选择合适的配色。\n\n2. 字体选择：\n大标题要粗，正文要细。衬线体适合文艺风，无衬线适合干货类。\n\n3. 留白艺术：\n不要把画面塞满，适当的留白能让画面更高级。\n\n4. 视觉层级：\n通过字号大小、颜色深浅来区分信息的重要性，引导用户视线。\n\n5. 色彩搭配：\n选择和谐的色彩组合，主色调不要超过3种，避免视觉疲劳。\n\n6. 图像选择：\n高清图片是基础，模糊的图片会降低整体品质。\n\n7. 排版技巧：\n对齐方式要统一，标题与正文的比例要协调。\n\n8. 装饰元素：\n适当的装饰能提升画面质感，但不要喧宾夺主。\n\n9. 品牌一致性：\n保持风格统一，建立个人品牌识别度。\n\n10. 细节处理：\n关注字体间距、行高、边框等细节，细节决定成败。\n\n这是一个自动分页的演示文本。当内容超过一页的容量时，系统会自动将其切割成多张图片，确保排版美观。你可以在左侧输入框随意输入长文本进行测试。\n\n测试分页功能：请继续添加更多内容来测试自动分页效果。当文字内容足够多时，系统会自动创建新的页面，确保所有文字都能完整显示。\n\n更多测试内容：这是为了测试分页功能而添加的额外内容，确保系统能够正确处理长文本。\n\n继续测试：分页功能应该能够自动将这些内容分割到多个页面中，每个页面都显示完整的内容。"
+                // 内容数据
+                const content = ref({
+                    title: '小红书爆款标题',
+                    subtitle: 'Subtitle / 英文装饰',
+                    author: '@作者名',
+                    date: '第01期',
+                    body: '在这里输入正文内容，支持换行。系统会自动分页显示\n\n可以输入多行文本，系统会根据内容长度自动分拆到多个页面。\n\n记得保持内容简洁有力，吸引用户点击！'
                 });
 
-                const config = reactive({
+                // 配置数据
+                const config = ref({
                     bgColor: '#ffffff',
-                    textColor: '#1a1a1a',
-                    titleSize: 42,
-                    bodySize: 16,
-                    overlayOpacity: 0,
-                    bgImage: '',
+                    textColor: '#333333',
                     fontFamily: "'Noto Sans SC', sans-serif",
+                    titleSize: 36,
+                    bodySize: 16,
                     align: 'left',
+                    overlayOpacity: 50,
+                    bgImage: '',
+                    textEffects: {
+                        shadow: false,
+                        shadowColor: '#000000',
+                        shadowBlur: 5,
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2,
+                        stroke: false,
+                        strokeColor: '#000000',
+                        strokeWidth: 1,
+                        gradient: false,
+                        gradientDirection: 'horizontal',
+                        gradientColors: ['#667eea', '#764ba2'],
+                        verticalText: false
+                    },
                     watermark: {
                         text: '',
                         size: 12,
                         opacity: 20,
                         position: 'bottom-right'
+                    },
+                    qrcode: {
+                        enabled: false,
+                        content: '',
+                        size: 100,
+                        margin: 2,
+                        position: 'bottom-right',
+                        dataUrl: ''
+                    },
+                    imageFilter: {
+                        enabled: false,
+                        brightness: 100,
+                        contrast: 100,
+                        saturate: 100,
+                        grayscale: 0,
+                        sepia: 0,
+                        blur: 0,
+                        hueRotate: 0
                     }
                 });
 
-                // 2. 风格预设库
-                const styles = {
-                    minimalist: {
-                        name: "极简白",
-                        cfg: { bgColor: '#ffffff', textColor: '#1a1a1a', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    geek: {
-                        name: "极客黑",
-                        cfg: { bgColor: '#111111', textColor: '#00ff41', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    blue: {
-                        name: "科技蓝",
-                        cfg: { bgColor: '#2563eb', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    cream: {
-                        name: "奶油风",
-                        cfg: { bgColor: '#fdfbf7', textColor: '#8b5e3c', fontFamily: "'Noto Serif SC', serif", overlayOpacity: 0, align: 'justify' }
-                    },
-                    sticker: {
-                        name: "多巴胺",
-                        cfg: { bgColor: '#fcd34d', textColor: '#be185d', fontFamily: "'Zcool KuaiLe', cursive", overlayOpacity: 0, align: 'left' }
-                    },
-                    memo: {
-                        name: "备忘录",
-                        cfg: { bgColor: '#fef3c7', textColor: '#4b5563', fontFamily: "'ZCOOL XiaoWei', serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    retro: {
-                        name: "复古风",
-                        cfg: { bgColor: '#d4a76a', textColor: '#8b0000', fontFamily: "'Noto Serif SC', serif", overlayOpacity: 0, align: 'justify' }
-                    },
-                    tech: {
-                        name: "未来感",
-                        cfg: { bgColor: '#0f172a', textColor: '#60a5fa', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    nature: {
-                        name: "小清新",
-                        cfg: { bgColor: '#e0f2fe', textColor: '#0369a1', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    business: {
-                        name: "商务灰",
-                        cfg: { bgColor: '#f1f5f9', textColor: '#1e293b', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'left' }
-                    },
-                    gray: {
-                        name: "高级灰",
-                        cfg: { bgColor: '#6b7280', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", overlayOpacity: 0, align: 'center' }
-                    },
-                    // ... 保留其他风格预设 (略微精简代码以适应长度)
-                };
+                // 预览模式
+                const previewMode = ref('desktop');
+                const showSafeArea = ref(false);
+                const showGridLines = ref(false);
 
-                // ============================================
-                // 核心修复：MAX_HEIGHT 调整为 300，避免最后一行被切
-                // ============================================
-                const paginateText = (text, cfg) => {
-                    if (!text) return [''];
+                // 导出状态
+                const isExporting = ref(false);
 
-                    const dummy = document.createElement('div');
-                    document.body.appendChild(dummy);
+                // 元素位置（用于拖拽）
+                const elementPositions = ref({
+                    title: { x: 0, y: 0 },
+                    subtitle: { x: 0, y: 0 },
+                    date: { x: 0, y: 0 },
+                    author: { x: 0, y: 0 },
+                    body: { x: 0, y: 0 }
+                });
 
-                    // 严格同步样式
-                    dummy.style.width = '296px';
-                    dummy.style.fontSize = cfg.bodySize + 'px';
-                    dummy.style.fontFamily = cfg.fontFamily;
-                    dummy.style.lineHeight = '1.5';
-                    dummy.style.whiteSpace = 'pre-wrap';
-                    // 核心修改：确保长字符串（如1111）能强制切断换行
-                    dummy.style.wordBreak = 'break-all';
-                    dummy.style.overflowWrap = 'anywhere';
-                    dummy.style.textAlign = cfg.align;
-                    dummy.style.position = 'fixed';
-                    dummy.style.left = '-9999px';
-                    dummy.style.visibility = 'hidden';
+                // 拖拽状态
+                const dragState = ref({
+                    active: false,
+                    element: null,
+                    startX: 0,
+                    startY: 0,
+                    startPosX: 0,
+                    startPosY: 0
+                });
 
-                    // 【核心修改】从 340 降低到 300，留出底部安全空间
-                    const MAX_HEIGHT = 300; 
-                    
-                    const pages = [];
-                    let remaining = text;
+                // 文案助手数据
+                const currentCopyType = ref('titles');
+                const selectedCopyTemplate = ref('');
+                const keyword = ref('');
+                const generatedCopy = ref('');
 
-                    while (remaining.length > 0) {
-                        // 1. 先尝试全部放入
-                        const cleanText = remaining.replace(/\*\*(.*?)\*\*/g, '$1');
-                        dummy.innerText = cleanText;
-                        if (dummy.offsetHeight <= MAX_HEIGHT) {
-                            pages.push(remaining);
-                            break;
-                        }
+                // 拖放状态
+                const isDragging = ref(false);
+                const fileInput = ref(null);
 
-                        // 2. 二分查找
-                        let low = 0;
-                        let high = remaining.length;
-                        let splitIndex = 0;
+                const copyTemplates = ref({
+                    titles: [
+                        '惊艳！这个{{keyword}}技巧让我月入过万',
+                        '别再浪费钱了！{{keyword}}的正确打开方式',
+                        '爆火全网的{{keyword}}方法，简单易学',
+                        '我花了3个月研究{{keyword}}，总结出这些经验',
+                        '震惊！原来{{keyword}}可以这么简单',
+                        '{{keyword}}避坑指南，看完少走99%的弯路',
+                        '2024年最火的{{keyword}}趋势，你一定要知道',
+                        '从0到1学会{{keyword}}，小白也能轻松上手'
+                    ],
+                    openers: [
+                        '大家好，今天想和大家分享一下关于{{keyword}}的经验',
+                        '最近很多朋友问我关于{{keyword}}的问题，今天统一解答',
+                        '作为一个深耕{{keyword}}领域5年的从业者，我想告诉大家',
+                        '不知道大家有没有遇到过{{keyword}}的困扰，今天我来帮你解决',
+                        '分享一个我自己实践过的{{keyword}}方法，效果非常好'
+                    ],
+                    tags: [
+                        '#{{keyword}} #生活技巧 #实用分享',
+                        '#{{keyword}} #新手入门 #经验分享',
+                        '#{{keyword}} #避坑指南 #干货分享',
+                        '#{{keyword}} #省钱技巧 #生活妙招',
+                        '#{{keyword}} #学习方法 #效率提升'
+                    ]
+                });
 
-                        while (low <= high) {
-                            const mid = Math.floor((low + high) / 2);
-                            const midText = remaining.slice(0, mid).replace(/\*\*(.*?)\*\*/g, '$1');
-                            dummy.innerText = midText;
-                            
-                            if (dummy.offsetHeight <= MAX_HEIGHT) {
-                                splitIndex = mid;
-                                low = mid + 1;
-                            } else {
-                                high = mid - 1;
-                            }
-                        }
+                // 风格预设
+                const styles = ref({
+                    '基础风格': [
+                        { name: '简约白', config: { bgColor: '#ffffff', textColor: '#333333', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '深夜黑', config: { bgColor: '#000000', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '莫兰迪', config: { bgColor: '#F8F4EA', textColor: '#4A4A4A', fontFamily: "'Noto Serif SC', serif", titleSize: 32, bodySize: 15 } },
+                        { name: '马卡龙', config: { bgColor: '#FFF5F7', textColor: '#FF6B9D', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 34, bodySize: 15 } },
+                        { name: '复古风', config: { bgColor: '#F5EFE6', textColor: '#8B7355', fontFamily: "'ZCOOL QingKe HuangYou', cursive", titleSize: 30, bodySize: 14 } },
+                        { name: '科技感', config: { bgColor: '#0A1929', textColor: '#64FFDA', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 38, bodySize: 16 } },
+                        { name: '清新绿', config: { bgColor: '#E8F5E8', textColor: '#2E7D32', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 34, bodySize: 15 } },
+                        { name: '高级灰', config: { bgColor: '#F5F5F5', textColor: '#666666', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 32, bodySize: 15 } },
+                        { name: '珊瑚橙', config: { bgColor: '#FFF3E0', textColor: '#FF9800', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 36, bodySize: 16 } }
+                    ],
+                    '渐变风格': [
+                        { name: '粉紫渐变', config: { bgColor: '#667eea', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#667eea', '#764ba2'] } } },
+                        { name: '橙红渐变', config: { bgColor: '#ff6b6b', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#ff6b6b', '#ee5a6f'] } } },
+                        { name: '蓝绿渐变', config: { bgColor: '#11998e', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#11998e', '#38ef7d'] } } },
+                        { name: '金黄渐变', config: { bgColor: '#f12711', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#f12711', '#f5af19'] } } },
+                        { name: '梦幻渐变', config: { bgColor: '#833ab4', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#833ab4', '#fd1d1d', '#fcb045'] } } },
+                        { name: '冷色渐变', config: { bgColor: '#2193b0', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#2193b0', '#6dd5ed'] } } },
+                        { name: '樱花渐变', config: { bgColor: '#ff9a9e', textColor: '#ffffff', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#ff9a9e', '#fecfef'] } } },
+                        { name: '深海渐变', config: { bgColor: '#005aa7', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#005aa7', '#fffde4'] } } },
+                        { name: '森林渐变', config: { bgColor: '#4facfe', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16, textEffects: { gradient: true, gradientColors: ['#4facfe', '#00f2fe'] } } }
+                    ],
+                    '字体风格': [
+                        { name: '文艺衬线', config: { fontFamily: "'Noto Serif SC', serif", titleSize: 34, bodySize: 15 } },
+                        { name: '古风手写', config: { fontFamily: "'Ma Shan Zheng', cursive", titleSize: 32, bodySize: 14 } },
+                        { name: '可爱卡通', config: { fontFamily: "'Zcool KuaiLe', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '优雅小薇', config: { fontFamily: "'ZCOOL XiaoWei', serif", titleSize: 32, bodySize: 15 } },
+                        { name: '书法龙藏', config: { fontFamily: "'Long Cang', cursive", titleSize: 34, bodySize: 15 } },
+                        { name: '草书毛体', config: { fontFamily: "'Liu Jian Mao Cao', cursive", titleSize: 30, bodySize: 14 } },
+                        { name: '稚拙志莽', config: { fontFamily: "'Zhi Mang Xing', cursive", titleSize: 32, bodySize: 14 } },
+                        { name: '复古青科', config: { fontFamily: "'ZCOOL QingKe HuangYou', cursive", titleSize: 30, bodySize: 14 } },
+                        { name: '现代无衬线', config: { fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } }
+                    ],
+                    '特效风格': [
+                        { name: '文字阴影', config: { textEffects: { shadow: true, shadowColor: '#000000', shadowBlur: 5, shadowOffsetX: 2, shadowOffsetY: 2 } } },
+                        { name: '文字描边', config: { textEffects: { stroke: true, strokeColor: '#000000', strokeWidth: 1 } } },
+                        { name: '渐变文字', config: { textEffects: { gradient: true, gradientColors: ['#667eea', '#764ba2'] } } },
+                        { name: '竖排文字', config: { textEffects: { verticalText: true } } },
+                        { name: '阴影描边', config: { textEffects: { shadow: true, stroke: true, shadowColor: '#000000', strokeColor: '#ffffff' } } },
+                        { name: '立体文字', config: { textEffects: { shadow: true, shadowBlur: 8, shadowOffsetX: 4, shadowOffsetY: 4 } } },
+                        { name: '霓虹文字', config: { textEffects: { shadow: true, shadowColor: '#ff00ff', shadowBlur: 10, shadowOffsetX: 0, shadowOffsetY: 0, gradient: true, gradientColors: ['#ff00ff', '#00ffff'] } } },
+                        { name: '金色描边', config: { textEffects: { stroke: true, strokeColor: '#FFD700', strokeWidth: 1.5 } } },
+                        { name: '多重阴影', config: { textEffects: { shadow: true, shadowColor: '#000000', shadowBlur: 12, shadowOffsetX: 6, shadowOffsetY: 6 } } }
+                    ],
+                    '节日风格': [
+                        { name: '春节喜庆', config: { bgColor: '#ff4d4f', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 38, bodySize: 16 } },
+                        { name: '情人节', config: { bgColor: '#ff85c0', textColor: '#ffffff', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '圣诞节', config: { bgColor: '#ff6b6b', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '国庆节', config: { bgColor: '#ff4d4f', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 38, bodySize: 16 } },
+                        { name: '中秋节', config: { bgColor: '#ffd666', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '万圣节', config: { bgColor: '#2c3e50', textColor: '#f1c40f', fontFamily: "'ZCOOL QingKe HuangYou', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '元宵节', config: { bgColor: '#FFB6C1', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '端午节', config: { bgColor: '#4CAF50', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '圣诞节', config: { bgColor: '#2E7D32', textColor: '#FFEB3B', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } }
+                    ],
+                    '行业风格': [
+                        { name: '美妆时尚', config: { bgColor: '#f8bbd0', textColor: '#ffffff', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '美食探店', config: { bgColor: '#ffcc80', textColor: '#ffffff', fontFamily: "'Ma Shan Zheng', cursive", titleSize: 36, bodySize: 16 } },
+                        { name: '旅行攻略', config: { bgColor: '#81d4fa', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '健身健康', config: { bgColor: '#81c784', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '职场提升', config: { bgColor: '#64b5f6', textColor: '#ffffff', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '学习教育', config: { bgColor: '#9575cd', textColor: '#ffffff', fontFamily: "'Noto Serif SC', serif", titleSize: 34, bodySize: 15 } },
+                        { name: '科技数码', config: { bgColor: '#263238', textColor: '#00BCD4', fontFamily: "'Noto Sans SC', sans-serif", titleSize: 36, bodySize: 16 } },
+                        { name: '母婴育儿', config: { bgColor: '#FFE0B2', textColor: '#E65100', fontFamily: "'Zcool KuaiLe', cursive", titleSize: 34, bodySize: 15 } },
+                        { name: '家居生活', config: { bgColor: '#A5D6A7', textColor: '#33691E', fontFamily: "'Noto Serif SC', serif", titleSize: 32, bodySize: 15 } }
+                    ]
+                });
 
-                        // 3. 智能回退
-                        let bestSplit = splitIndex;
-                        const lookBackRange = Math.min(20, splitIndex); 
-                        const punctuation = ['\n', '。', '！', '？', '；', '.', '!', '?', ';', '”', '"'];
-                        
-                        for (let i = 0; i < lookBackRange; i++) {
-                            const char = remaining[splitIndex - 1 - i];
-                            if (punctuation.includes(char)) {
-                                bestSplit = splitIndex - i; 
-                                break;
-                            }
-                        }
-                        
-                        if (bestSplit < splitIndex * 0.8) {
-                            bestSplit = splitIndex;
-                        }
-
-                        if (bestSplit === 0) bestSplit = 1;
-
-                        pages.push(remaining.slice(0, bestSplit));
-                        
-                        remaining = remaining.slice(bestSplit);
-                        
-                        if (remaining.startsWith('\n')) {
-                            remaining = remaining.slice(1);
-                        }
-                    }
-
-                    document.body.removeChild(dummy);
-                    return pages;
-                };
-
-                const splitContent = ref([]);
-
-                watch(
-                    [
-                        () => content.body, 
-                        () => config.bodySize, 
-                        () => config.fontFamily,
-                        () => config.align
-                    ], 
-                    () => {
-                        nextTick(() => {
-                            splitContent.value = paginateText(content.body, config);
-                        });
-                    },
-                    { immediate: true }
-                );
-
+                // 计算属性：分页内容
                 const allPages = computed(() => {
-                    return ['', ...splitContent.value];
+                    const pages = [];
+                    const bodyText = content.value.body;
+                    
+                    if (!bodyText) {
+                        return [''];
+                    }
+                    
+                    // 简单的分页逻辑：按换行符分割
+                    const paragraphs = bodyText.split('\n');
+                    let currentPage = '';
+                    
+                    paragraphs.forEach(paragraph => {
+                        if (currentPage.length + paragraph.length > 500) {
+                            pages.push(currentPage.trim());
+                            currentPage = paragraph;
+                        } else {
+                            currentPage += (currentPage ? '\n' : '') + paragraph;
+                        }
+                    });
+                    
+                    if (currentPage) {
+                        pages.push(currentPage.trim());
+                    }
+                    
+                    return pages;
                 });
 
+                // 计算属性：卡片样式
                 const cardStyle = computed(() => ({
-                    color: config.textColor,
-                    fontFamily: config.fontFamily,
+                    fontFamily: config.value.fontFamily,
+                    color: config.value.textColor
                 }));
 
-                const applyStyle = (key) => {
-                    currentStyleKey.value = key;
-                    const s = styles[key].cfg;
-                    config.bgColor = s.bgColor;
-                    config.textColor = s.textColor;
-                    config.fontFamily = s.fontFamily;
-                    config.align = s.align;
-                    if(!config.bgImage) config.overlayOpacity = s.overlayOpacity;
-                };
+                // 计算属性：预览样式
+                const previewStyle = computed(() => {
+                    const style = {};
+                    
+                    if (config.value.textEffects.verticalText) {
+                        style.writingMode = 'vertical-rl';
+                        style.textOrientation = 'upright';
+                    }
+                    
+                    return style;
+                });
 
-                const handleImageUpload = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            config.bgImage = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
+                // 方法：应用模板
+                const applyTemplate = (template) => {
+                    if (template.config) {
+                        Object.assign(config.value, JSON.parse(JSON.stringify(template.config)));
                     }
                 };
 
-                const exportImages = async () => {
-                    isExporting.value = true;
+                // 方法：处理图片上传
+                const handleImageUpload = (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        processImageFile(file);
+                    }
+                };
+
+                // 方法：处理拖放上传
+                const handleDrop = (event) => {
+                    event.preventDefault();
+                    isDragging.value = false;
+                    
+                    const file = event.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        processImageFile(file);
+                    }
+                };
+
+                // 方法：处理图片文件
+                const processImageFile = (file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        config.value.bgImage = e.target.result;
+                    };
+                    reader.onerror = () => {
+                        alert('图片读取失败，请重试');
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                // 方法：处理拖拽进入
+                const handleDragEnter = (event) => {
+                    event.preventDefault();
+                    isDragging.value = true;
+                };
+
+                // 方法：处理拖拽离开
+                const handleDragLeave = (event) => {
+                    event.preventDefault();
+                    isDragging.value = false;
+                };
+
+                // 方法：生成二维码
+                const generateQRCode = async () => {
+                    if (!config.value.qrcode.content) {
+                        alert('请输入二维码内容');
+                        return;
+                    }
+                    
                     try {
-                        // 1. 确保字体加载完成
-                        await document.fonts.ready;
-                        
-                        // 2. 预留渲染时间
-                        await nextTick();
-                        
-                        const zip = new JSZip();
-                        
-                        // 核心优化点：使用 Promise.all 进行并行渲染
-                        // 不再等待一张画完再画下一张，而是让浏览器同时启动所有任务
-                        const exportTasks = allPages.value.map(async (page, i) => {
-                            const element = document.getElementById(`capture-${i}`);
-                            if (!element) return;
-
-                            // 优化点：直接导出为 Blob，跳过 Base64 编解码，速度提升约 30%
-                            const blob = await htmlToImage.toBlob(element, {
-                                pixelRatio: 2,      // 保持高清
-                                cacheBust: false,    // 减少重复的网络请求扫描
-                                skipFonts: false,    // 确保包含自定义字体
-                            });
-
-                            if (blob) {
-                                zip.file(`xhs-slide-${i + 1}.png`, blob);
+                        const dataUrl = await QRCode.toDataURL(config.value.qrcode.content, {
+                            width: config.value.qrcode.size,
+                            margin: config.value.qrcode.margin,
+                            color: {
+                                dark: '#000000',
+                                light: '#FFFFFF'
                             }
                         });
-
-                        // 并行执行所有导出任务
-                        await Promise.all(exportTasks);
-
-                        // 3. 生成并下载ZIP文件
-                        const zipContent = await zip.generateAsync({
-                            type: 'blob',
-                            compression: "STORE" // 设为 STORE (不压缩) 可以显著加快 ZIP 生成速度
-                        });
-                        
-                        const link = document.createElement('a');
-                        link.download = `xhs-post-${Date.now()}.zip`;
-                        link.href = URL.createObjectURL(zipContent);
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-
-                        setTimeout(() => { alert('一键打包成功！'); }, 300);
+                        config.value.qrcode.dataUrl = dataUrl;
                     } catch (error) {
-                        console.error('Export failed:', error);
-                        alert('导出失败: ' + error.message);
+                        console.error('生成二维码失败:', error);
+                        alert('生成二维码失败，请重试');
+                    }
+                };
+
+                // 方法：重置图片滤镜
+                const resetImageFilter = () => {
+                    config.value.imageFilter = {
+                        enabled: true,
+                        brightness: 100,
+                        contrast: 100,
+                        saturate: 100,
+                        grayscale: 0,
+                        sepia: 0,
+                        blur: 0,
+                        hueRotate: 0
+                    };
+                };
+
+                // 方法：开始拖拽
+                const startDrag = (element, event) => {
+                    event.preventDefault();
+                    dragState.value = {
+                        active: true,
+                        element,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        startPosX: elementPositions.value[element].x,
+                        startPosY: elementPositions.value[element].y
+                    };
+                };
+
+                // 方法：拖拽中
+                const onDrag = (event) => {
+                    if (dragState.value.active) {
+                        const deltaX = event.clientX - dragState.value.startX;
+                        const deltaY = event.clientY - dragState.value.startY;
+                        
+                        elementPositions.value[dragState.value.element] = {
+                            x: dragState.value.startPosX + deltaX,
+                            y: dragState.value.startPosY + deltaY
+                        };
+                    }
+                };
+
+                // 方法：结束拖拽
+                const endDrag = () => {
+                    dragState.value.active = false;
+                };
+
+                // 方法：导出图片
+                const exportImages = async () => {
+                    isExporting.value = true;
+                    
+                    try {
+                        const zip = new JSZip();
+                        const batchSize = 3;
+                        
+                        const getExportScale = () => {
+                            switch (previewMode.value) {
+                                case 'mobile':
+                                    return 3;
+                                case 'tablet':
+                                    return 2.5;
+                                default:
+                                    return 2;
+                            }
+                        };
+                        
+                        // 批量处理
+                        for (let i = 0; i < allPages.value.length; i += batchSize) {
+                            const batch = allPages.value.slice(i, i + batchSize);
+                            const batchPromises = batch.map(async (_, index) => {
+                                const pageIndex = i + index;
+                                const element = document.getElementById(`capture-${pageIndex}`);
+                                
+                                if (element) {
+                                    const canvas = await html2canvas(element, {
+                                        scale: getExportScale(),
+                                        useCORS: true,
+                                        logging: false,
+                                        backgroundColor: null
+                                    });
+                                    
+                                    const dataURL = canvas.toDataURL('image/png');
+                                    const filename = `小红书封面_${pageIndex + 1}.png`;
+                                    
+                                    // 添加到zip
+                                    const base64Data = dataURL.split(',')[1];
+                                    zip.file(filename, base64Data, { base64: true });
+                                    
+                                    // 清理内存
+                                    canvas.width = 0;
+                                    canvas.height = 0;
+                                }
+                            });
+                            
+                            await Promise.all(batchPromises);
+                        }
+                        
+                        // 生成zip并下载
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        
+                        if (isMobile) {
+                            // 移动端处理：生成单个图片或小批量
+                            if (allPages.value.length === 1) {
+                                const element = document.getElementById(`capture-0`);
+                                if (element) {
+                                    const canvas = await html2canvas(element, {
+                                        scale: getExportScale(),
+                                        useCORS: true,
+                                        logging: false,
+                                        backgroundColor: null
+                                    });
+                                    
+                                    canvas.toBlob((blob) => {
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = '小红书封面_1.png';
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                    });
+                                }
+                            } else {
+                                // 移动端批量处理
+                                const zipContent = await zip.generateAsync({ type: 'blob' });
+                                const url = URL.createObjectURL(zipContent);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = '小红书封面.zip';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }
+                        } else {
+                            // 桌面端处理
+                            const zipContent = await zip.generateAsync({ type: 'blob' });
+                            const url = URL.createObjectURL(zipContent);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = '小红书封面.zip';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }
+                        
+                        alert('导出成功！');
+                    } catch (error) {
+                        console.error('导出失败:', error);
+                        alert('导出失败，请重试');
                     } finally {
                         isExporting.value = false;
                     }
                 };
 
-
-
+                // 方法：保存配置
                 const saveConfig = () => {
-                    try {
-                        localStorage.setItem('xhs-maker-config', JSON.stringify({
-                            bgColor: config.bgColor,
-                            textColor: config.textColor,
-                            titleSize: config.titleSize,
-                            bodySize: config.bodySize,
-                            overlayOpacity: config.overlayOpacity,
-                            fontFamily: config.fontFamily,
-                            align: config.align,
-                            watermark: config.watermark
-                        }));
-                        alert('配置保存成功！');
-                    } catch (error) {
-                        console.error('Save config failed:', error);
-                        alert('保存失败，请重试');
-                    }
+                    const configData = {
+                        content: content.value,
+                        config: config.value,
+                        elementPositions: elementPositions.value
+                    };
+                    localStorage.setItem('xhs-maker-config', JSON.stringify(configData));
+                    alert('配置保存成功！');
                 };
 
+                // 方法：加载配置
                 const loadConfig = () => {
-                    try {
-                        const savedConfig = localStorage.getItem('xhs-maker-config');
-                        if (savedConfig) {
-                            const parsedConfig = JSON.parse(savedConfig);
-                            Object.assign(config, parsedConfig);
-                            alert('配置加载成功！');
-                        } else {
-                            alert('没有找到保存的配置');
-                        }
-                    } catch (error) {
-                        console.error('Load config failed:', error);
-                        alert('加载失败，请重试');
+                    const savedConfig = localStorage.getItem('xhs-maker-config');
+                    if (savedConfig) {
+                        const configData = JSON.parse(savedConfig);
+                        content.value = configData.content;
+                        config.value = configData.config;
+                        elementPositions.value = configData.elementPositions;
+                        alert('配置加载成功！');
+                    } else {
+                        alert('没有找到保存的配置');
                     }
                 };
 
+                // 方法：保存模板
+                const saveTemplate = () => {
+                    const templateName = prompt('请输入模板名称：');
+                    if (!templateName) return;
+                    
+                    const templates = JSON.parse(localStorage.getItem('xhs-maker-templates') || '{}');
+                    const templateData = {
+                        content: content.value,
+                        config: config.value,
+                        elementPositions: elementPositions.value,
+                        createdAt: new Date().toISOString()
+                    };
+                    templates[templateName] = templateData;
+                    localStorage.setItem('xhs-maker-templates', JSON.stringify(templates));
+                    alert(`模板 "${templateName}" 保存成功！`);
+                };
+
+                // 方法：加载模板
+                const loadTemplate = () => {
+                    const templates = JSON.parse(localStorage.getItem('xhs-maker-templates') || '{}');
+                    const templateNames = Object.keys(templates);
+                    
+                    if (templateNames.length === 0) {
+                        alert('没有找到保存的模板');
+                        return;
+                    }
+                    
+                    let templateName = prompt(`请输入要加载的模板名称：\n\n${templateNames.join('\n')}`);
+                    if (!templateName) return;
+                    
+                    if (!templates[templateName]) {
+                        alert(`模板 "${templateName}" 不存在`);
+                        return;
+                    }
+                    
+                    const templateData = templates[templateName];
+                    content.value = templateData.content;
+                    config.value = templateData.config;
+                    elementPositions.value = templateData.elementPositions;
+                    alert(`模板 "${templateName}" 加载成功！`);
+                };
+
+                // 方法：删除模板
+                const deleteTemplate = () => {
+                    const templates = JSON.parse(localStorage.getItem('xhs-maker-templates') || '{}');
+                    const templateNames = Object.keys(templates);
+                    
+                    if (templateNames.length === 0) {
+                        alert('没有找到保存的模板');
+                        return;
+                    }
+                    
+                    let templateName = prompt(`请输入要删除的模板名称：\n\n${templateNames.join('\n')}`);
+                    if (!templateName) return;
+                    
+                    if (!templates[templateName]) {
+                        alert(`模板 "${templateName}" 不存在`);
+                        return;
+                    }
+                    
+                    if (confirm(`确定要删除模板 "${templateName}" 吗？`)) {
+                        delete templates[templateName];
+                        localStorage.setItem('xhs-maker-templates', JSON.stringify(templates));
+                        alert(`模板 "${templateName}" 删除成功！`);
+                    }
+                };
+
+                // 方法：重置配置
                 const resetConfig = () => {
                     if (confirm('确定要重置所有配置吗？')) {
-                        config.bgColor = '#ffffff';
-                        config.textColor = '#1a1a1a';
-                        config.titleSize = 42;
-                        config.bodySize = 16;
-                        config.overlayOpacity = 0;
-                        config.bgImage = '';
-                        config.fontFamily = "'Noto Sans SC', sans-serif";
-                        config.align = 'left';
-                        config.watermark = {
-                            text: '',
-                            size: 12,
-                            opacity: 20,
-                            position: 'bottom-right'
+                        content.value = {
+                            title: '小红书爆款标题',
+                            subtitle: 'Subtitle / 英文装饰',
+                            author: '@作者名',
+                            date: '第01期',
+                            body: '在这里输入正文内容，支持换行。系统会自动分页显示\n\n可以输入多行文本，系统会根据内容长度自动分拆到多个页面。\n\n记得保持内容简洁有力，吸引用户点击！'
                         };
-                        currentStyleKey.value = 'minimalist';
-                        alert('配置已重置为默认值');
-                    }
-                };
-
-                const renderPageText = (text) => {
-                    if (!text) return '';
-                    let safeText = text.replace(/&/g, "&amp;")
-                                       .replace(/</g, "&lt;")
-                                       .replace(/>/g, "&gt;")
-                                       .replace(/"/g, "&quot;")
-                                       .replace(/'/g, "&#039;");
-                    // 替换换行符为 <br>，替换 **text** 为高亮
-                    return safeText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<span class="highlight-text">$1</span>');
-                };
-
-
-
-                const exportSinglePage = async (pageIndex) => {
-                    try {
-                        // 1. 确保字体加载完成
-                        await document.fonts.ready;
                         
-                        // 2. 给 DOM 一点点时间渲染样式
-                        await nextTick();
-                        await new Promise(resolve => setTimeout(resolve, 300));
-
-                        const element = document.getElementById(`capture-${pageIndex}`);
-                        if (!element) {
-                            alert('页面元素未找到');
-                            return;
-                        }
-
-                        // 3. 使用html-to-image库导出
-                        const dataUrl = await htmlToImage.toPng(element, {
-                            pixelRatio: 2, // 2倍清晰度
-                            skipFonts: false, // 尝试包含字体
-                        });
-
-                        // 4. 下载图片
-                        const link = document.createElement('a');
-                        link.download = `xhs-slide-${pageIndex + 1}.png`;
-                        link.href = dataUrl;
-                        link.click();
-
-                        setTimeout(() => { alert('单页导出成功！'); }, 500);
-                    } catch (error) {
-                        console.error('Export single page failed:', error);
-                        alert('导出失败: ' + error.message);
+                        config.value = {
+                            bgColor: '#ffffff',
+                            textColor: '#333333',
+                            fontFamily: "'Noto Sans SC', sans-serif",
+                            titleSize: 36,
+                            bodySize: 16,
+                            align: 'left',
+                            overlayOpacity: 50,
+                            bgImage: '',
+                            textEffects: {
+                                shadow: false,
+                                shadowColor: '#000000',
+                                shadowBlur: 5,
+                                shadowOffsetX: 2,
+                                shadowOffsetY: 2,
+                                stroke: false,
+                                strokeColor: '#000000',
+                                strokeWidth: 1,
+                                gradient: false,
+                                gradientDirection: 'horizontal',
+                                gradientColors: ['#667eea', '#764ba2'],
+                                verticalText: false
+                            },
+                            watermark: {
+                                text: '',
+                                size: 12,
+                                opacity: 20,
+                                position: 'bottom-right'
+                            }
+                        };
+                        
+                        elementPositions.value = {
+                            title: { x: 0, y: 0 },
+                            subtitle: { x: 0, y: 0 },
+                            date: { x: 0, y: 0 },
+                            author: { x: 0, y: 0 },
+                            body: { x: 0, y: 0 }
+                        };
+                        
+                        alert('配置已重置！');
                     }
                 };
+
+                // 方法：批量更新风格
+                const batchUpdateStyle = () => {
+                    if (confirm('确定要将当前风格应用到所有页面吗？')) {
+                        alert('风格已批量更新！');
+                    }
+                };
+
+                // 方法：批量添加水印
+                const batchAddWatermark = () => {
+                    if (!config.value.watermark.text) {
+                        alert('请先设置水印文本');
+                        return;
+                    }
+                    if (confirm('确定要将当前水印应用到所有页面吗？')) {
+                        alert('水印已批量添加！');
+                    }
+                };
+
+                // 方法：批量导出
+                const batchExport = () => {
+                    exportImages();
+                };
+
+                // 方法：分享到社交媒体
+                const shareToSocial = (platform) => {
+                    const shareUrl = window.location.href;
+                    const shareText = `我刚刚用小红书封面生成器制作了一个超棒的封面：${content.value.title}`;
+                    
+                    switch (platform) {
+                        case 'weibo':
+                            const weiboUrl = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+                            window.open(weiboUrl, '_blank');
+                            break;
+                        case 'wechat':
+                            alert('请使用微信扫一扫功能分享此页面');
+                            break;
+                        case 'qq':
+                            const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+                            window.open(qqUrl, '_blank');
+                            break;
+                        case 'copy':
+                            navigator.clipboard.writeText(shareUrl).then(() => {
+                                alert('链接已复制到剪贴板！');
+                            }).catch(() => {
+                                alert('复制失败，请手动复制');
+                            });
+                            break;
+                        default:
+                            alert('暂不支持该平台分享');
+                    }
+                };
+
+                // 方法：生成文案
+                const generateCopy = () => {
+                    if (!selectedCopyTemplate.value || !keyword.value) {
+                        alert('请选择文案模板并输入关键词');
+                        return;
+                    }
+                    
+                    generatedCopy.value = selectedCopyTemplate.value.replace(/{{keyword}}/g, keyword.value);
+                };
+
+                // 方法：复制到剪贴板
+                const copyToClipboard = () => {
+                    if (generatedCopy.value) {
+                        navigator.clipboard.writeText(generatedCopy.value).then(() => {
+                            alert('复制成功！');
+                        }).catch(() => {
+                            alert('复制失败，请手动复制');
+                        });
+                    }
+                };
+
+                // 计算属性：emoji数量
+                const emojiCount = computed(() => {
+                    const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
+                    const matches = generatedCopy.value.match(emojiRegex);
+                    return matches ? matches.length : 0;
+                });
+
+                // 生命周期：挂载
+                onMounted(() => {
+                    // 尝试加载保存的配置
+                    loadConfig();
+                });
 
                 return {
-                    content, config, styles, currentStyleKey,
-                    splitContent, allPages, cardStyle,
-                    applyStyle, handleImageUpload, exportImages, isExporting,
-                    saveConfig, loadConfig, resetConfig,
-                    renderPageText, exportSinglePage
+                    content,
+                    config,
+                    previewMode,
+                    showSafeArea,
+                    showGridLines,
+                    isExporting,
+                    elementPositions,
+                    currentCopyType,
+                    selectedCopyTemplate,
+                    keyword,
+                    generatedCopy,
+                    copyTemplates,
+                    styles,
+                    allPages,
+                    cardStyle,
+                    previewStyle,
+                    emojiCount,
+                    applyTemplate,
+                    handleImageUpload,
+                    startDrag,
+                    onDrag,
+                    endDrag,
+                    exportImages,
+                    saveConfig,
+                    loadConfig,
+                    resetConfig,
+                    batchUpdateStyle,
+                    batchAddWatermark,
+                    batchExport,
+                    generateCopy,
+                    copyToClipboard
                 };
             }
         }).mount('#app');
     </script>
 </body>
-</html>
+</html>.title }}</span>
+                                     <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
+                                </div>
+
+                                <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden cursor-move" 
+                                     @mousedown="startDrag('body', $event)"
+                                     :class="{ 'text-gradient': config.textEffects.gradient }"
+                                     :style="{ 
+                                         fontSize: config.bodySize + 'px', 
+                                         textAlign: config.align,
+                                         transform: `translate(${elementPositions.body.x}px, ${elementPositions.body.y}px)`, 
+                                         transition: 'none',
+                                         background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                         WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                         WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                         textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                         WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                     }">
+                                    <div class="content-text">
+                                        {{ page }}
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex justify-center opacity-40">
+                                    <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 设备边框包装器 - 桌面模式 -->
+                    <div v-else-if="previewMode === 'desktop'" class="">
+                        <div :id="'capture-' + index" 
+                             class="xhs-card flex flex-col p-6 md:p-8" :style="[cardStyle, previewStyle]">
+                        
+                            <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ 
+                                backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none',
+                                filter: config.imageFilter.enabled ? `brightness(${config.imageFilter.brightness}%) contrast(${config.imageFilter.contrast}%) saturate(${config.imageFilter.saturate}%) grayscale(${config.imageFilter.grayscale}%) sepia(${config.imageFilter.sepia}%) blur(${config.imageFilter.blur}px) hue-rotate(${config.imageFilter.hueRotate}deg)` : 'none'
+                            }"></div>
+                            <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
+                            <div class="noise-overlay z-0"></div>
+
+                            <!-- 安全区域指示器 -->
+                            <div v-if="showSafeArea" class="safe-area-indicator absolute inset-0 z-50 pointer-events-none"></div>
+                            <!-- 网格线 -->
+                            <div v-if="showGridLines" class="grid-lines absolute inset-0 z-50 pointer-events-none bg-grid"></div>
+
+                            <div v-if="config.watermark.text" 
+                                 :class="[
+                                     'absolute z-10 pointer-events-none',
+                                     config.watermark.position === 'top-left' ? 'top-4 left-4' : '',
+                                     config.watermark.position === 'top-right' ? 'top-4 right-4' : '',
+                                     config.watermark.position === 'bottom-left' ? 'bottom-4 left-4' : '',
+                                     config.watermark.position === 'bottom-right' ? 'bottom-4 right-4' : ''
+                                 ]"
+                                 :style="{
+                                     fontSize: config.watermark.size + 'px',
+                                     opacity: config.watermark.opacity / 100,
+                                     color: config.textColor,
+                                     fontFamily: config.fontFamily
+                                 }">
+                                {{ config.watermark.text }}
+                            </div>
+
+                            <!-- 主封面 -->
+                            <div v-if="index === 0" class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-60 mb-8">
+                                    <span class="text-xs tracking-widest uppercase border border-current px-2 py-0.5 rounded-full cursor-move"
+                                          @mousedown="startDrag('date', $event)"
+                                          :style="{ transform: `translate(${elementPositions.date.x}px, ${elementPositions.date.y}px)`, transition: 'none' }">
+                                        {{ content.date }}
+                                    </span>
+                                    <span class="text-xs font-bold cursor-move"
+                                          @mousedown="startDrag('author', $event)"
+                                          :style="{ transform: `translate(${elementPositions.author.x}px, ${elementPositions.author.y}px)`, transition: 'none' }">
+                                        {{ content.author }}
+                                    </span>
+                                </div>
+
+                                <div class="flex-1 flex flex-col justify-center overflow-hidden">
+                                    <h1 class="font-black leading-tight mb-4 whitespace-pre-wrap overflow-hidden cursor-move"
+                                        @mousedown="startDrag('title', $event)"
+                                        :class="{ 'text-gradient': config.textEffects.gradient }"
+                                        :style="{ 
+                                            fontSize: config.titleSize + 'px', 
+                                            maxHeight: '70%',
+                                            transform: `translate(${elementPositions.title.x}px, ${elementPositions.title.y}px)`, 
+                                            transition: 'none',
+                                            background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                            WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                            WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                            textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                            WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none',
+                                            writingMode: config.textEffects.verticalText ? 'vertical-rl' : 'horizontal-tb',
+                                            textOrientation: config.textEffects.verticalText ? 'upright' : 'mixed'
+                                        }">
+                                        {{ content.title || '标题预览' }}
+                                    </h1>
+                                    <p class="text-lg opacity-80 font-medium tracking-wide border-l-4 border-current pl-3 overflow-hidden cursor-move"
+                                       @mousedown="startDrag('subtitle', $event)"
+                                       :class="{ 'text-gradient': config.textEffects.gradient }"
+                                       :style="{ 
+                                           fontSize: (config.titleSize * 0.4) + 'px', 
+                                           maxHeight: '20%',
+                                           transform: `translate(${elementPositions.subtitle.x}px, ${elementPositions.subtitle.y}px)`, 
+                                           transition: 'none',
+                                           background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
+                                           WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
+                                           WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
+                                           textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
+                                           WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
+                                       }">
+                                        {{ content.subtitle }}
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto pt-8 border-t border-current border-opacity-30 flex justify-between items-end">
+                                    <div class="text-xs opacity-70">
+                                        SHARE FOR<br>MORE IDEAS
+                                    </div>
+                                    <div class="text-3xl opacity-80">
+                                        <i class="fa-brands fa-xiaohongshu"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 内容分页 -->
+                            <div v-else class="relative z-10 h-full flex flex-col" 
+                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
+                                <div class="flex justify-between items-center opacity-50 mb-6 border-b border-current border-opacity-20 pb-2">
+                                     <span class="text-xs font-bold">{{ content

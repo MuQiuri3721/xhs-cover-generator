@@ -1,113 +1,71 @@
 # 小红书封面生成器
 
-一个功能强大的小红书封面生成器，支持多种风格预设、自定义配色、字体选择等功能。
+> 一键生成小红书爆款封面，支持 36+ 风格预设、背景图片、文字特效、二维码水印
 
 ## 功能特性
-- 🎨 11种预设风格（极简白、极客黑、科技蓝、奶油风、多巴胺、备忘录、复古风、未来感、小清新、商务灰、高级灰）
-- ✏️ 实时预览和编辑
-- 🖼️ 支持自定义背景图片
-- 📦 一键打包下载高清图片
-- � 配置保存到本地浏览器存储
-- 📱 响应式设计
-- 🌈 精美的渐变背景和动画效果
+
+- 🎨 **36+ 预设风格**：基础风格、渐变风格、字体风格、特效风格、节日风格、行业风格
+- ✏️ **实时预览编辑**：标题、副标题、作者、日期、正文
+- 🖼️ **背景图片上传**：支持拖放 + 滤镜调节（亮度/对比度/饱和度/灰度/模糊）
+- 📐 **精确尺寸**：360×480px（3:4 小红书标准比例）
+- 🔤 **18 种中英文字体**：思源黑体、衬线体、手写体、卡通体、书法体
+- ✨ **文字特效**：阴影、描边、渐变、竖排文字
+- 📦 **一键打包下载**：ZIP 格式高清 PNG（2x 分辨率）
+- 💾 **配置保存**：localStorage 持久化，可保存/加载模板
+- 📱 **三种预览模式**：桌面 / 手机 / 平板
+- 🔲 **二维码生成**：可嵌入封面
+- 💧 **水印设置**：位置/大小/透明度
+- 📝 **文案助手**：标题/开场白/标签模板，关键词替换
+
+## 技术栈
+
+- Vue 3 (CDN)
+- Tailwind CSS (CDN)
+- html2canvas（图片导出）
+- JSZip（ZIP 打包）
+- QRCode.js（二维码生成）
 
 ## 本地运行
 
-### 方法1：直接打开
-1. 克隆或下载项目
-2. 直接在浏览器中打开 `index.html` 文件
+### 方法 1：直接打开
+双击 `index.html` 在浏览器中打开
 
-### 方法2：使用本地服务器
+### 方法 2：本地服务器
 ```bash
-# 使用 Python
+# Python
 python -m http.server 8000
 
-# 使用 Node.js (需要先安装 http-server)
-npx http-server
-
-# 使用 PHP
-php -S localhost:8000
+# Node.js
+npx http-server -p 8000
 ```
-
-然后在浏览器中访问 `http://localhost:8000`
+访问 `http://localhost:8000`
 
 ## 在线部署
 
 ### Cloudflare Pages（推荐）
-- 🚀 全球 CDN 加速，访问速度极快
-- 💰 完全免费，无限流量和带宽
-- 🌍 自动 HTTPS 证书
-- 🔄 自动部署（连接 GitHub 后）
-
-详细步骤请查看 [DEPLOYMENT.md](./DEPLOYMENT.md)
+1. 推送代码到 GitHub
+2. 连接 Cloudflare Pages → 选择仓库 → 部署
+3. 获得 `https://xhs-cover-generator.pages.dev`
 
 ### GitHub Pages
-- 🎯 直接集成在 GitHub 中
-- 🆓 完全免费
-- 📝 简单易用
-- 🔗 自动 HTTPS
+1. 推送代码到 GitHub
+2. Settings → Pages → Source: main / (root)
+3. 获得 `https://MuQiuri3721.github.io/xhs-cover-generator/`
 
-详细步骤请查看 [DEPLOYMENT.md](./DEPLOYMENT.md)
+## 文件结构
 
-## 使用说明
-
-### 创建封面
-1. 在左侧编辑内容（标题、副标题、作者、日期、正文）
-2. 选择风格预设或自定义样式
-3. 上传背景图片（可选）
-4. 实时预览效果
-5. 点击"一键打包下载高清图"导出
-
-### 配置管理
-- 💾 保存配置：将当前样式设置保存到本地存储
-- 📂 加载配置：从本地存储加载之前保存的配置
-- 🔄 重置配置：恢复到默认设置
-
-## 技术栈
-- Vue 3 (CDN)
-- Tailwind CSS (CDN)
-- html2canvas (截图)
-- JSZip (打包下载)
-- Font Awesome (图标)
-
-## 项目结构
 ```
 小红书封面生成器/
-├── index.html              # 主应用文件
-├── README.md              # 项目说明
-├── DEPLOYMENT.md          # 详细部署指南
-├── QUICKSTART.md          # 快速开始指南
+├── index.html          # 主应用（单文件，可直接打开）
+├── README.md           # 项目说明
+├── DEPLOYMENT.md       # 详细部署指南
+├── QUICKSTART.md       # 快速开始
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml    # GitHub Actions 自动部署配置
-└── .gitignore            # Git 忽略文件
+│       └── deploy.yml  # GitHub Actions 自动部署
+└── .gitignore
 ```
 
-## 快速开始
-
-查看 [QUICKSTART.md](./QUICKSTART.md) 了解如何快速部署到 Cloudflare Pages 或 GitHub Pages。
-
-## 常见问题
-
-### Q: 如何修改预设风格？
-A: 在 `index.html` 中找到 `styles` 对象，修改相应的配置即可。
-
-### Q: 支持哪些浏览器？
-A: 支持所有现代浏览器（Chrome、Firefox、Safari、Edge）
-
-### Q: 数据保存在哪里？
-A: 所有配置保存在浏览器的本地存储中，刷新页面后数据会保留。
-
-### Q: 如何自定义背景？
-A: 点击"背景图片"部分上传图片，系统会自动应用并调整遮罩浓度。
-
 ## 许可证
+
 MIT License
-
-## 贡献
-欢迎提交 Issue 和 Pull Request！
-
-## 在线体验
-
-- Cloudflare Pages: https://xhs-cover-generator.pages.dev
-- GitHub Pages: https://mengyan070206.github.io/xhs-cover-generator/
