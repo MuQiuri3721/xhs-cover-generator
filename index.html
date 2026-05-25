@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Zcool+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -1494,22 +1494,29 @@
                 };
 
                 // 方法：生成二维码
-                const generateQRCode = async () => {
+                const generateQRCode = () => {
                     if (!config.value.qrcode.content) {
                         alert('请输入二维码内容');
                         return;
                     }
                     
                     try {
-                        const dataUrl = await QRCode.toDataURL(config.value.qrcode.content, {
+                        const container = document.getElementById('qrcode-preview');
+                        if (!container) return;
+                        container.innerHTML = '';
+                        new QRCode(container, {
+                            text: config.value.qrcode.content,
                             width: config.value.qrcode.size,
+                            height: config.value.qrcode.size,
                             margin: config.value.qrcode.margin,
-                            color: {
-                                dark: '#000000',
-                                light: '#FFFFFF'
-                            }
+                            colorDark: '#000000',
+                            colorLight: '#FFFFFF'
                         });
-                        config.value.qrcode.dataUrl = dataUrl;
+                        // Get data URL from canvas
+                        const canvas = container.querySelector('canvas');
+                        if (canvas) {
+                            config.value.qrcode.dataUrl = canvas.toDataURL('image/png');
+                        }
                     } catch (error) {
                         console.error('生成二维码失败:', error);
                         alert('生成二维码失败，请重试');
