@@ -1193,6 +1193,47 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 设备边框包装器 - 桌面模式 -->
+                    <div v-else-if="previewMode === 'desktop'" class="">
+                        <div :id="'capture-' + index" class="xhs-card flex flex-col p-6 md:p-8" :style="[cardStyle, previewStyle]">
+
+                            <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{
+                                backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none',
+                                filter: config.imageFilter.enabled ? `brightness(${config.imageFilter.brightness}%) contrast(${config.imageFilter.contrast}%) saturate(${config.imageFilter.saturate}%) grayscale(${config.imageFilter.grayscale}%) sepia(${config.imageFilter.sepia}%) blur(${config.imageFilter.blur}px) hue-rotate(${config.imageFilter.hueRotate}deg)` : 'none'
+                            }"></div>
+                            <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
+                            <div class="noise-overlay z-0"></div>
+
+                            <div v-if="config.watermark.text" :class="['absolute z-10 pointer-events-none', config.watermark.position === 'top-left' ? 'top-4 left-4' : '', config.watermark.position === 'top-right' ? 'top-4 right-4' : '', config.watermark.position === 'bottom-left' ? 'bottom-4 left-4' : '', config.watermark.position === 'bottom-right' ? 'bottom-4 right-4' : '']" :style="{ fontSize: config.watermark.size + 'px', opacity: config.watermark.opacity / 100, color: config.textColor, fontFamily: config.fontFamily }">{{ config.watermark.text }}</div>
+
+                            <div v-if="config.qrcode.enabled && config.qrcode.dataUrl" :class="['absolute z-10 pointer-events-none bg-white p-2 rounded-lg', config.qrcode.position === 'top-left' ? 'top-4 left-4' : '', config.qrcode.position === 'top-right' ? 'top-4 right-4' : '', config.qrcode.position === 'bottom-left' ? 'bottom-4 left-4' : '', config.qrcode.position === 'bottom-right' ? 'bottom-4 right-4' : '']"><img :src="config.qrcode.dataUrl" :width="config.qrcode.size" :height="config.qrcode.size" alt="QR Code" class="block"></div>
+
+                            <div v-if="index === 0" class="relative z-10 h-full flex flex-col">
+                                <div class="flex justify-between items-center opacity-60 mb-8">
+                                    <span class="text-xs tracking-widest uppercase border border-current px-2 py-0.5 rounded-full">{{ content.date }}</span>
+                                    <span class="text-xs font-bold">{{ content.author }}</span>
+                                </div>
+                                <div class="flex-1 flex flex-col justify-center overflow-hidden">
+                                    <h1 class="font-black leading-tight mb-4 whitespace-pre-wrap overflow-hidden" :class="{ 'text-gradient': config.textEffects.gradient }" :style="{ fontSize: config.titleSize + 'px', maxHeight: '70%', background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none', WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none', WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor, textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none', WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none', writingMode: config.textEffects.verticalText ? 'vertical-rl' : 'horizontal-tb', textOrientation: config.textEffects.verticalText ? 'upright' : 'mixed' }">{{ content.title || '标题预览' }}</h1>
+                                    <p class="text-lg opacity-80 font-medium tracking-wide border-l-4 border-current pl-3 overflow-hidden" :class="{ 'text-gradient': config.textEffects.gradient }" :style="{ fontSize: (config.titleSize * 0.4) + 'px', maxHeight: '20%', background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none', WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none', WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor, textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none', WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none' }">{{ content.subtitle }}</p>
+                                </div>
+                                <div class="mt-auto pt-8 border-t border-current border-opacity-30 flex justify-between items-end">
+                                    <div class="text-xs opacity-70">SHARE FOR<br>MORE IDEAS</div>
+                                    <div class="text-3xl opacity-80"><i class="fa-brands fa-xiaohongshu"></i></div>
+                                </div>
+                            </div>
+
+                            <div v-else class="relative z-10 h-full flex flex-col">
+                                <div class="flex justify-between items-center opacity-50 mb-6 border-b border-current border-opacity-20 pb-2">
+                                    <span class="text-xs font-bold">{{ content.title }}</span>
+                                    <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
+                                </div>
+                                <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden" :class="{ 'text-gradient': config.textEffects.gradient }" :style="{ fontSize: config.bodySize + 'px', textAlign: config.align, background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none', WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none', WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor, textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none', WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none' }"><div class="content-text">{{ page }}</div></div>
+                                <div class="mt-4 flex justify-center opacity-40"><span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -1396,33 +1437,60 @@
                     ]
                 });
 
-                // 计算属性：分页内容
+                // 计算属性：分页内容（根据实际渲染高度自动分页）
                 const allPages = computed(() => {
-                    const pages = [];
                     const bodyText = content.value.body;
-                    
-                    if (!bodyText) {
-                        return [''];
+
+                    // 第一个元素永远是空字符串（封面页）
+                    const result = [''];
+
+                    if (!bodyText || !bodyText.trim()) {
+                        return result;
                     }
-                    
-                    // 简单的分页逻辑：按换行符分割
+
+                    // 动态分页：基于实际渲染高度
+                    // 卡片内容区域高度约 300px，字体大小 config.bodySize
+                    const fontSize = config.value.bodySize;
+                    const lineHeight = fontSize * 1.5;
+                    const contentHeight = 300; // 估算内容区域高度
+                    const charsPerLine = Math.floor(320 / fontSize);
+                    const maxLines = Math.floor(contentHeight / lineHeight);
+                    const maxCharsPerPage = charsPerLine * maxLines;
+
+                    // 按段落分割
                     const paragraphs = bodyText.split('\n');
                     let currentPage = '';
-                    
+                    let currentLines = 0;
+
                     paragraphs.forEach(paragraph => {
-                        if (currentPage.length + paragraph.length > 500) {
-                            pages.push(currentPage.trim());
-                            currentPage = paragraph;
+                        const trimmedPara = paragraph.trim();
+                        if (!trimmedPara) {
+                            // 空行不占用内容，但增加间距
+                            currentLines += 1;
+                            return;
+                        }
+
+                        const paraLines = Math.ceil(trimmedPara.length / charsPerLine) || 1;
+
+                        if (currentLines + paraLines > maxLines) {
+                            // 当前页已满，添加到结果并开始新页
+                            if (currentPage.trim()) {
+                                result.push(currentPage.trim());
+                            }
+                            currentPage = trimmedPara;
+                            currentLines = paraLines;
                         } else {
-                            currentPage += (currentPage ? '\n' : '') + paragraph;
+                            currentPage += (currentPage ? '\n' : '') + trimmedPara;
+                            currentLines += paraLines;
                         }
                     });
-                    
-                    if (currentPage) {
-                        pages.push(currentPage.trim());
+
+                    // 添加最后一页
+                    if (currentPage.trim()) {
+                        result.push(currentPage.trim());
                     }
-                    
-                    return pages;
+
+                    return result;
                 });
 
                 // 计算属性：卡片样式
@@ -1683,17 +1751,17 @@
                     alert('配置保存成功！');
                 };
 
-                // 方法：加载配置
-                const loadConfig = () => {
+                // 方法：加载配置（silent=true 时不弹提示）
+                const loadConfig = (silent = false) => {
                     const savedConfig = localStorage.getItem('xhs-maker-config');
                     if (savedConfig) {
                         const configData = JSON.parse(savedConfig);
                         content.value = configData.content;
                         config.value = configData.config;
                         elementPositions.value = configData.elementPositions;
-                        alert('配置加载成功！');
+                        if (!silent) alert('配置加载成功！');
                     } else {
-                        alert('没有找到保存的配置');
+                        if (!silent) alert('没有找到保存的配置');
                     }
                 };
 
@@ -1900,8 +1968,8 @@
 
                 // 生命周期：挂载
                 onMounted(() => {
-                    // 尝试加载保存的配置
-                    loadConfig();
+                    // 尝试加载保存的配置（静默模式，不弹提示）
+                    loadConfig(true);
                 });
 
                 return {
@@ -1941,135 +2009,4 @@
         }).mount('#app');
     </script>
 </body>
-</html>.title }}</span>
-                                     <span class="text-xs font-mono">{{ index }} / {{ allPages.length - 1 }}</span>
-                                </div>
-
-                                <div class="content-container flex-1 whitespace-pre-wrap overflow-hidden cursor-move" 
-                                     @mousedown="startDrag('body', $event)"
-                                     :class="{ 'text-gradient': config.textEffects.gradient }"
-                                     :style="{ 
-                                         fontSize: config.bodySize + 'px', 
-                                         textAlign: config.align,
-                                         transform: `translate(${elementPositions.body.x}px, ${elementPositions.body.y}px)`, 
-                                         transition: 'none',
-                                         background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
-                                         WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
-                                         WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
-                                         textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
-                                         WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
-                                     }">
-                                    <div class="content-text">
-                                        {{ page }}
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 flex justify-center opacity-40">
-                                    <span class="text-[10px] tracking-[0.2em] uppercase">Swipe Left</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 设备边框包装器 - 桌面模式 -->
-                    <div v-else-if="previewMode === 'desktop'" class="">
-                        <div :id="'capture-' + index" 
-                             class="xhs-card flex flex-col p-6 md:p-8" :style="[cardStyle, previewStyle]">
-                        
-                            <div class="absolute inset-0 z-0 bg-cover bg-center" :style="{ 
-                                backgroundImage: config.bgImage ? `url(${config.bgImage})` : 'none',
-                                filter: config.imageFilter.enabled ? `brightness(${config.imageFilter.brightness}%) contrast(${config.imageFilter.contrast}%) saturate(${config.imageFilter.saturate}%) grayscale(${config.imageFilter.grayscale}%) sepia(${config.imageFilter.sepia}%) blur(${config.imageFilter.blur}px) hue-rotate(${config.imageFilter.hueRotate}deg)` : 'none'
-                            }"></div>
-                            <div class="absolute inset-0 z-0" :style="{ backgroundColor: config.bgColor, opacity: config.bgImage ? (config.overlayOpacity/100) : 1 }"></div>
-                            <div class="noise-overlay z-0"></div>
-
-                            <!-- 安全区域指示器 -->
-                            <div v-if="showSafeArea" class="safe-area-indicator absolute inset-0 z-50 pointer-events-none"></div>
-                            <!-- 网格线 -->
-                            <div v-if="showGridLines" class="grid-lines absolute inset-0 z-50 pointer-events-none bg-grid"></div>
-
-                            <div v-if="config.watermark.text" 
-                                 :class="[
-                                     'absolute z-10 pointer-events-none',
-                                     config.watermark.position === 'top-left' ? 'top-4 left-4' : '',
-                                     config.watermark.position === 'top-right' ? 'top-4 right-4' : '',
-                                     config.watermark.position === 'bottom-left' ? 'bottom-4 left-4' : '',
-                                     config.watermark.position === 'bottom-right' ? 'bottom-4 right-4' : ''
-                                 ]"
-                                 :style="{
-                                     fontSize: config.watermark.size + 'px',
-                                     opacity: config.watermark.opacity / 100,
-                                     color: config.textColor,
-                                     fontFamily: config.fontFamily
-                                 }">
-                                {{ config.watermark.text }}
-                            </div>
-
-                            <!-- 主封面 -->
-                            <div v-if="index === 0" class="relative z-10 h-full flex flex-col" 
-                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
-                                <div class="flex justify-between items-center opacity-60 mb-8">
-                                    <span class="text-xs tracking-widest uppercase border border-current px-2 py-0.5 rounded-full cursor-move"
-                                          @mousedown="startDrag('date', $event)"
-                                          :style="{ transform: `translate(${elementPositions.date.x}px, ${elementPositions.date.y}px)`, transition: 'none' }">
-                                        {{ content.date }}
-                                    </span>
-                                    <span class="text-xs font-bold cursor-move"
-                                          @mousedown="startDrag('author', $event)"
-                                          :style="{ transform: `translate(${elementPositions.author.x}px, ${elementPositions.author.y}px)`, transition: 'none' }">
-                                        {{ content.author }}
-                                    </span>
-                                </div>
-
-                                <div class="flex-1 flex flex-col justify-center overflow-hidden">
-                                    <h1 class="font-black leading-tight mb-4 whitespace-pre-wrap overflow-hidden cursor-move"
-                                        @mousedown="startDrag('title', $event)"
-                                        :class="{ 'text-gradient': config.textEffects.gradient }"
-                                        :style="{ 
-                                            fontSize: config.titleSize + 'px', 
-                                            maxHeight: '70%',
-                                            transform: `translate(${elementPositions.title.x}px, ${elementPositions.title.y}px)`, 
-                                            transition: 'none',
-                                            background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
-                                            WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
-                                            WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
-                                            textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
-                                            WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none',
-                                            writingMode: config.textEffects.verticalText ? 'vertical-rl' : 'horizontal-tb',
-                                            textOrientation: config.textEffects.verticalText ? 'upright' : 'mixed'
-                                        }">
-                                        {{ content.title || '标题预览' }}
-                                    </h1>
-                                    <p class="text-lg opacity-80 font-medium tracking-wide border-l-4 border-current pl-3 overflow-hidden cursor-move"
-                                       @mousedown="startDrag('subtitle', $event)"
-                                       :class="{ 'text-gradient': config.textEffects.gradient }"
-                                       :style="{ 
-                                           fontSize: (config.titleSize * 0.4) + 'px', 
-                                           maxHeight: '20%',
-                                           transform: `translate(${elementPositions.subtitle.x}px, ${elementPositions.subtitle.y}px)`, 
-                                           transition: 'none',
-                                           background: config.textEffects.gradient ? `linear-gradient(${config.textEffects.gradientDirection === 'horizontal' ? '90deg' : config.textEffects.gradientDirection === 'vertical' ? '180deg' : '45deg'}, ${config.textEffects.gradientColors[0]}, ${config.textEffects.gradientColors[1]})` : 'none',
-                                           WebkitBackgroundClip: config.textEffects.gradient ? 'text' : 'none',
-                                           WebkitTextFillColor: config.textEffects.gradient ? 'transparent' : config.textColor,
-                                           textShadow: config.textEffects.shadow ? `${config.textEffects.shadowOffsetX}px ${config.textEffects.shadowOffsetY}px ${config.textEffects.shadowBlur}px ${config.textEffects.shadowColor}` : 'none',
-                                           WebkitTextStroke: config.textEffects.stroke ? `${config.textEffects.strokeWidth}px ${config.textEffects.strokeColor}` : 'none'
-                                       }">
-                                        {{ content.subtitle }}
-                                    </p>
-                                </div>
-
-                                <div class="mt-auto pt-8 border-t border-current border-opacity-30 flex justify-between items-end">
-                                    <div class="text-xs opacity-70">
-                                        SHARE FOR<br>MORE IDEAS
-                                    </div>
-                                    <div class="text-3xl opacity-80">
-                                        <i class="fa-brands fa-xiaohongshu"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 内容分页 -->
-                            <div v-else class="relative z-10 h-full flex flex-col" 
-                                 @mousemove="onDrag" @mouseup="endDrag" @mouseleave="endDrag">
-                                <div class="flex justify-between items-center opacity-50 mb-6 border-b border-current border-opacity-20 pb-2">
-                                     <span class="text-xs font-bold">{{ content
+</html>
