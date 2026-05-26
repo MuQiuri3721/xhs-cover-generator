@@ -1437,58 +1437,22 @@
                     ]
                 });
 
-                // 计算属性：分页内容（根据实际渲染高度自动分页）
+                // 计算属性：分页内容
                 const allPages = computed(() => {
                     const bodyText = content.value.body;
 
-                    // 第一个元素永远是空字符串（封面页）
+                    // 第一个元素是封面页（空字符串）
                     const result = [''];
 
                     if (!bodyText || !bodyText.trim()) {
                         return result;
                     }
 
-                    // 动态分页：基于实际渲染高度
-                    // 卡片内容区域高度约 300px，字体大小 config.bodySize
-                    const fontSize = config.value.bodySize;
-                    const lineHeight = fontSize * 1.5;
-                    const contentHeight = 300; // 估算内容区域高度
-                    const charsPerLine = Math.floor(320 / fontSize);
-                    const maxLines = Math.floor(contentHeight / lineHeight);
-                    const maxCharsPerPage = charsPerLine * maxLines;
+                    // 按换行符分割成段落
+                    const paragraphs = bodyText.split('\n').filter(p => p.trim());
 
-                    // 按段落分割
-                    const paragraphs = bodyText.split('\n');
-                    let currentPage = '';
-                    let currentLines = 0;
-
-                    paragraphs.forEach(paragraph => {
-                        const trimmedPara = paragraph.trim();
-                        if (!trimmedPara) {
-                            // 空行不占用内容，但增加间距
-                            currentLines += 1;
-                            return;
-                        }
-
-                        const paraLines = Math.ceil(trimmedPara.length / charsPerLine) || 1;
-
-                        if (currentLines + paraLines > maxLines) {
-                            // 当前页已满，添加到结果并开始新页
-                            if (currentPage.trim()) {
-                                result.push(currentPage.trim());
-                            }
-                            currentPage = trimmedPara;
-                            currentLines = paraLines;
-                        } else {
-                            currentPage += (currentPage ? '\n' : '') + trimmedPara;
-                            currentLines += paraLines;
-                        }
-                    });
-
-                    // 添加最后一页
-                    if (currentPage.trim()) {
-                        result.push(currentPage.trim());
-                    }
+                    // 每段一页
+                    result.push(...paragraphs);
 
                     return result;
                 });
