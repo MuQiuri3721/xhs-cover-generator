@@ -1240,7 +1240,7 @@
     </div>
 
     <script>
-        const { createApp, ref, computed, watch, onMounted } = Vue;
+        const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -1437,7 +1437,7 @@
                     ]
                 });
 
-                // 计算属性：分页内容
+                // 计算属性：分页内容（根据实际渲染高度自动分页）
                 const allPages = computed(() => {
                     const bodyText = content.value.body;
 
@@ -1448,11 +1448,37 @@
                         return result;
                     }
 
-                    // 按换行符分割成段落
-                    const paragraphs = bodyText.split('\n').filter(p => p.trim());
+                    // 每页约 150 字符（确保内容填满卡片）
+                    const maxCharsPerPage = 150;
+                    let start = 0;
 
-                    // 每段一页
-                    result.push(...paragraphs);
+                    while (start < bodyText.length) {
+                        let end = start + maxCharsPerPage;
+                        if (end >= bodyText.length) {
+                            end = bodyText.length;
+                        } else {
+                            // 找到最近的换行、空格或标点作为分页点
+                            let breakPoint = bodyText.lastIndexOf('\n', end);
+                            if (breakPoint <= start) {
+                                breakPoint = bodyText.lastIndexOf(' ', end);
+                            }
+                            if (breakPoint <= start) {
+                                breakPoint = bodyText.lastIndexOf('。', end);
+                            }
+                            if (breakPoint <= start) {
+                                breakPoint = bodyText.lastIndexOf('，', end);
+                            }
+                            if (breakPoint <= start) {
+                                breakPoint = Math.min(end, bodyText.length);
+                            }
+                            end = breakPoint + 1; // 包含标点
+                        }
+                        const pageText = bodyText.slice(start, end).trim();
+                        if (pageText) {
+                            result.push(pageText);
+                        }
+                        start = end;
+                    }
 
                     return result;
                 });
@@ -1603,11 +1629,14 @@
                 // 方法：导出图片
                 const exportImages = async () => {
                     isExporting.value = true;
-                    
+
                     try {
+                        // 等待 Vue 渲染完成
+                        await nextTick();
+
                         const zip = new JSZip();
                         const batchSize = 3;
-                        
+
                         const getExportScale = () => {
                             switch (previewMode.value) {
                                 case 'mobile':
@@ -1618,61 +1647,52 @@
                                     return 2;
                             }
                         };
-                        
+
                         // 批量处理
                         for (let i = 0; i < allPages.value.length; i += batchSize) {
                             const batch = allPages.value.slice(i, i + batchSize);
                             const batchPromises = batch.map(async (_, index) => {
                                 const pageIndex = i + index;
                                 const element = document.getElementById(`capture-${pageIndex}`);
-                                
+
                                 if (element) {
-                                    const canvas = await html2canvas(element, {
-                                        scale: getExportScale(),
-                                        useCORS: true,
-                                        logging: false,
-                                        backgroundColor: null
-                                    });
-                                    
-                                    const dataURL = canvas.toDataURL('image/png');
-                                    const filename = `小红书封面_${pageIndex + 1}.png`;
-                                    
-                                    // 添加到zip
-                                    const base64Data = dataURL.split(',')[1];
-                                    zip.file(filename, base64Data, { base64: true });
-                                    
-                                    // 清理内存
-                                    canvas.width = 0;
-                                    canvas.height = 0;
+                                    try {
+                                        const dataUrl = await htmlToImage.toPng(element, {
+                                            pixelRatio: 2,
+                                            skipFonts: false,
+                                        });
+                                        const filename = `小红书封面_${pageIndex + 1}.png`;
+
+                                        // 添加到zip
+                                        const response = await fetch(dataUrl);
+                                        const blob = await response.blob();
+                                        zip.file(filename, blob);
+                                    } catch (e) {
+                                        console.error(`导出第${pageIndex + 1}页失败:`, e);
+                                    }
                                 }
                             });
-                            
+
                             await Promise.all(batchPromises);
                         }
-                        
+
                         // 生成zip并下载
                         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                        
+
                         if (isMobile) {
                             // 移动端处理：生成单个图片或小批量
                             if (allPages.value.length === 1) {
                                 const element = document.getElementById(`capture-0`);
                                 if (element) {
-                                    const canvas = await html2canvas(element, {
-                                        scale: getExportScale(),
-                                        useCORS: true,
-                                        logging: false,
-                                        backgroundColor: null
+                                    const dataUrl = await htmlToImage.toPng(element, {
+                                        pixelRatio: getExportScale(),
+                                        skipFonts: false,
                                     });
-                                    
-                                    canvas.toBlob((blob) => {
-                                        const url = URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = '小红书封面_1.png';
-                                        a.click();
-                                        URL.revokeObjectURL(url);
-                                    });
+
+                                    const link = document.createElement('a');
+                                    link.download = '小红书封面_1.png';
+                                    link.href = dataUrl;
+                                    link.click();
                                 }
                             } else {
                                 // 移动端批量处理
@@ -1694,7 +1714,7 @@
                             a.click();
                             URL.revokeObjectURL(url);
                         }
-                        
+
                         alert('导出成功！');
                     } catch (error) {
                         console.error('导出失败:', error);
